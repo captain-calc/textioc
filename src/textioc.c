@@ -278,12 +278,12 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 	
 	char *curr_letter;						// Holds current char
 	bool caps_on = true;
-	char *temp1;							// For letter insert
+	char *temp1;							// For letter insertion and general-purpose char pointing
 	char *temp2;
 	uint8_t text_BG_color;
 	uint8_t text_FG_color = 0x00;
 	uint24_t cursor_xPos = xPos + 1;
-	uint24_t i;								// Counter variable
+	uint24_t i;								// Used for cursor timer variable and width of chars after cursor in delete routine
 	bool cursor_active = false;
 	uint8_t key = '\0';
 	const char *lowercase_letters  = "\0\0\0\0\0\0\0\0\0\0\0wrmh\0\0\0\0vqlg\0\0\0zupkfc\0\0ytojeb\0\0xsnida\0\0\0\0\0\0\0\0";
@@ -371,10 +371,12 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			};
 		} while (!key);
 	
-		if (key == sk_Clear && curr_letter == buffer)
+	
+		/* Exit if cursor is at the start of the buffer and
+		   there are no chars in front of the cursor */
+		if (key == sk_Clear && curr_letter == buffer && *curr_letter == '\0')
 			return;
 		
-		// Changed the above from NULL to nothing
 		
 		if (key == sk_Enter) {
 			
@@ -400,11 +402,29 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		};
 		
 		if (key == sk_Clear) {
-			while (curr_letter > buffer)
-				*--curr_letter = '\0';
 			
 			gfx_SetColor(text_BG_color);
-			gfx_FillRectangle(xPos, yPos, cursor_xPos - xPos, 8);
+			gfx_FillRectangle(xPos, yPos, gfx_GetStringWidth(buffer), 8);
+			
+			if (curr_letter == buffer) {
+				temp1 = curr_letter;
+				while (*temp1 != '\0')
+					*temp1++ = '\0';
+			};
+			
+			/* If the cursor is in the middle of a word
+			   erase the chars before it and move the
+			   chars in front of the cursor backwards */
+			while (curr_letter > buffer) {
+				temp1 = curr_letter;
+				curr_letter--;
+				while (*temp1 != '\0') {
+					temp2 = temp1;
+					*(temp1 - 1) = *temp2;
+					temp1++;
+				};
+				*--temp1 = '\0';
+			};
 		};
 		
 		if ((key == sk_Del) && curr_letter > buffer) {
@@ -413,14 +433,20 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			dbg_sprintf(dbgout, "Deleted char\n");
 			
 			curr_letter--;
-			
-			// Erase char
+
+			/* Erase char left of the cursor and any
+			   chars to the right of the cursor */
 			gfx_SetColor(text_BG_color);
-			//gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter) - 1, yPos, gfx_GetCharWidth(*curr_letter), 8);
-			gfx_FillRectangle(xPos, yPos, cursor_xPos - xPos, 8);
-			
+			temp1 = curr_letter;
+			i = 0;
+			while (*temp1++ != '\0')
+				i += gfx_GetCharWidth(*temp1);
+			gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 8);
+
 			*curr_letter = '\0';
 			
+			/* If there are any chars in front of the
+			   cursor, shift them back */
 			if (curr_letter < buffer + buffer_size) {
 				if (*(curr_letter + 1) != '\0') {
 					temp1 = curr_letter;
@@ -465,7 +491,27 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			gfx_SetTextFGColor(text_FG_color);
 		};
 		
-		if (cursor_active && (uppercase_letters[key] || lowercase_letters[key])) {
+		if (cursor_active && *(buffer + buffer_size - 1) == '\0' && (uppercase_letters[key] || lowercase_letters[key])) {
+			
+			/* If there are any chars in front of
+			   the cursor, move them forward before
+			   adding the requested char */
+			if (*curr_letter != '\0') {
+				temp1 = buffer + buffer_size;
+				while (temp1 > curr_letter) {
+					temp1--;
+					temp2 = temp1;
+					*(temp1 + 1) = *temp2;
+				};
+			
+				/* Erase chars to the right of the cursor */
+				gfx_SetColor(text_BG_color);
+				temp1 = curr_letter;
+				i = 0;
+				while (*temp1++ != '\0')
+					i += gfx_GetCharWidth(*temp1);
+				gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 8);
+			};
 			
 			if (caps_on) {
 				*curr_letter = uppercase_letters[key];

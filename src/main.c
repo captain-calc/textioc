@@ -37,7 +37,7 @@ void main(void) {
 	
 	dbg_sprintf(dbgout, "\n------------------------------------------\nProgram starting...\n");
 	
-	gfx_Rectangle(48, 8, 100, 17);
+	gfx_Rectangle(47, 8, 90, 13);
 	textio_LetterInput(user_input, 8, 50, 10);
 	
 	dbg_sprintf(dbgout, "--------------------------------------------\nuser_input = %s", user_input);
