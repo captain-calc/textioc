@@ -404,7 +404,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		if (key == sk_Clear) {
 			
 			gfx_SetColor(text_BG_color);
-			gfx_FillRectangle(xPos, yPos, gfx_GetStringWidth(buffer), 8);
+			gfx_FillRectangle(xPos, yPos, gfx_GetStringWidth(buffer), 9);
 			
 			if (curr_letter == buffer) {
 				temp1 = curr_letter;
@@ -441,7 +441,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			i = 0;
 			while (*temp1++ != '\0')
 				i += gfx_GetCharWidth(*temp1);
-			gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 8);
+			gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 9);
 
 			*curr_letter = '\0';
 			
@@ -478,7 +478,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			if (caps_on) {
 				caps_on = false;
 				gfx_FillRectangle(cursor_xPos, yPos - 1, 9, 10);
-				gfx_PrintStringXY("a", cursor_xPos + 1, yPos);
+				gfx_PrintStringXY("a", cursor_xPos + 1, yPos + 1);
 			} else {
 				caps_on = true;
 				gfx_FillRectangle(cursor_xPos, yPos - 1, 9, 10);
@@ -488,7 +488,9 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			delay(400);
 			gfx_SetColor(text_BG_color);
 			gfx_FillRectangle(cursor_xPos, yPos - 1, 9, 10);
+			gfx_SetTextBGColor(text_BG_color);
 			gfx_SetTextFGColor(text_FG_color);
+			gfx_SetTextTransparentColor(text_BG_color);
 		};
 		
 		if (cursor_active && *(buffer + buffer_size - 1) == '\0' && (uppercase_letters[key] || lowercase_letters[key])) {
@@ -510,7 +512,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 				i = 0;
 				while (*temp1++ != '\0')
 					i += gfx_GetCharWidth(*temp1);
-				gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 8);
+				gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 9);
 			};
 			
 			if (caps_on) {
@@ -527,6 +529,6 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			dbg_sprintf(dbgout, "No char added\n");
 		};
 		
-		delay(100);
+		//delay(100);
 	};
 }
