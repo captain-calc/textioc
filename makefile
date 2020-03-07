@@ -5,10 +5,10 @@
 # Set COMPRESSED to "YES" to create a compressed program
 # ----------------------------
 
-NAME        ?= GUIDEMO
+NAME        ?= DEMO
 COMPRESSED  ?= NO
 ICON        ?= iconc.png
-DESCRIPTION ?= "GUILibCE v0.0.01a Demo"
+DESCRIPTION ?= "textioc demo"
 
 # ----------------------------
 # Other Options (Advanced)

@@ -306,6 +306,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		if (curr_letter < buffer + buffer_size)
 			cursor_active = true;
 
+		// Debugging
 		dbg_sprintf(dbgout, "cursor_active = %d\n", cursor_active);
 		
 		cursor_xPos = xPos + 1;
@@ -318,14 +319,13 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			};
 		};
 		
-		// Debugging
-		dbg_sprintf(dbgout, "cursor_xPos = %d\n", cursor_xPos);
-		
 		text_BG_color = gfx_GetPixel(cursor_xPos, yPos);
 		gfx_SetTextBGColor(text_BG_color);
 		gfx_SetTextTransparentColor(text_BG_color);
 		
-		// Debugging
+		// Debugging code
+		dbg_sprintf(dbgout, "cursor_xPos = %d\n", cursor_xPos);
+
 		dbg_sprintf(dbgout, "*curr_letter = %c\n", *curr_letter);
 		
 		dbg_sprintf(dbgout, "buffer =");
@@ -341,8 +341,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			dbg_sprintf(dbgout," %c ", *letter_chk++);
 		
 		dbg_sprintf(dbgout, "|\n");
-		
-	
+		// End of debugging code
 	
 		// Wait for input and display cursor
 		do {
@@ -361,7 +360,6 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		
 			if (cursor_active) {
 				gfx_SetColor(text_BG_color);
-				// dbg_sprintf(dbgout, "text_BG_color = %d\n", text_BG_color);
 				gfx_Line(cursor_xPos, yPos, cursor_xPos, yPos + 8);			
 			};
 		
@@ -380,8 +378,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		
 		if (key == sk_Enter) {
 			
-			
-			// Debugging
+			// Debugging code
 			dbg_sprintf(dbgout, "*curr_letter = %c\n", *curr_letter);
 		
 			dbg_sprintf(dbgout, "buffer =");
@@ -397,6 +394,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 				dbg_sprintf(dbgout," %c ", *letter_chk++);
 		
 			dbg_sprintf(dbgout, "|\n");
+			// End of debugging code
 			
 			return;
 		};
@@ -512,7 +510,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 				i = 0;
 				while (*temp1++ != '\0')
 					i += gfx_GetCharWidth(*temp1);
-				gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*curr_letter), yPos, i, 9);
+				gfx_FillRectangle(cursor_xPos, yPos, i, 9);
 			};
 			
 			if (caps_on) {
