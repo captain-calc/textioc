@@ -1,0 +1,6 @@
+library	"TEXTIOC", 1
+	export	textio_PrintWrappedText ; 0
+	export	textio_PrintTruncatedStringXY ; 3
+	export	textio_SetInputConfig ; 6
+	export	textio_LetterInput ; 9
+	export	textio_SetTextConfig ; 12
