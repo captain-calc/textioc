@@ -1,15 +1,8 @@
 #ifndef TEXTIOC_H
 #define TEXTIOC_H
 
-/*
-* ========================
-* Last edited: 2/22/2020
-* ========================
-*/
-
 #include <stdint.h>
 #include <string.h>
-
 
 void textio_PrintWrappedText(char *text, uint24_t width, uint24_t xPos, uint8_t yPos);
 /* maxWidth is in pixels */

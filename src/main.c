@@ -1,9 +1,11 @@
 /*
  *--------------------------------------
- * Program Name:
- * Author:
+ * Program Name: textioc
+ * Version: 0.1.00
+ * Author: Captain Calc
  * License:
- * Description:
+ * Description: A library for advanced text
+ * I/O for the TI-84 Plus CE
  *--------------------------------------
 */
 

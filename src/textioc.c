@@ -36,7 +36,7 @@ void textio_PrintWrappedText(char *text, uint24_t width, uint24_t xPos, uint8_t 
 			return;
 	};
 	
-	// Worst case scenerios
+	// Worst case scenerio
 	if (width > LCD_WIDTH)
 		width = LCD_WIDTH;
 	
