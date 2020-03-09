@@ -10,67 +10,90 @@
 // Debugging
 #include <debug.h>
 
-void textio_PrintWrappedText(char text[], uint24_t width, uint8_t xPos, uint8_t yPos) {
+typedef struct {
+	uint8_t text_FG_color;
+	uint8_t cursor_color;
+} input_t;
+
+input_t input_config;
+
+void textio_PrintWrappedText(char *text, uint24_t width, uint24_t xPos, uint8_t yPos) {
 	
 	char *curr_line_ptr;
 	uint24_t curr_line_width;
-	char *last_char_ptr;
+	char *char_ptr;
+	bool end_of_text = false;
 	
 	curr_line_ptr = text;
 	gfx_SetTextXY(xPos, yPos);
 	
 	// Debugging
 	gfx_SetColor(224);
-	gfx_FillRectangle(xPos + width, yPos, 2, 240);
+	gfx_FillRectangle(xPos + width, 0, 2, LCD_HEIGHT);
 	
 	if (gfx_GetStringWidth(text) <= width) {
 			gfx_PrintString(curr_line_ptr);
 			return;
 	};
 	
-	// Worst case scenerio
-	if (width > 320)
-		width = 320;
+	// Worst case scenerios
+	if (width > LCD_WIDTH)
+		width = LCD_WIDTH;
 	
-	do {
+	for(;;) {
 		gfx_SetTextXY(xPos, yPos);
-		last_char_ptr = curr_line_ptr;
+		char_ptr = curr_line_ptr;
 		curr_line_width = 0;
 		
 		// Increment the current selection char by char until it reaches the limit
-		do {
-			curr_line_width += gfx_GetCharWidth(*last_char_ptr++);
-			//dbg_sprintf(dbgout, "*last_char_ptr = %c\n", *last_char_ptr);
-		} while (curr_line_width < width && *last_char_ptr != '\0');
-		
-		//dbg_sprintf(dbgout, "Estimate done\n");
+		while (curr_line_width < (width - gfx_GetCharWidth(*char_ptr)) && *char_ptr != '\0') {
+			// Debugging
+			dbg_sprintf(dbgout, "*char_ptr = %c\n", *char_ptr);
+			curr_line_width += gfx_GetCharWidth(*char_ptr++);
+		};
+	
+		// Debugging
+		dbg_sprintf(dbgout, "Estimate done\n");
 		
 		// If the last char read was not a space and not the end of the text, decrement
 		// the current selection char by char until you find a space
-		while (*last_char_ptr != '\0' && *last_char_ptr != *curr_line_ptr && !isspace(*--last_char_ptr));
-			//dbg_sprintf(dbgout, "*last_char_ptr = %c\n", *last_char_ptr);
+		while (*char_ptr != '\0' && char_ptr != curr_line_ptr && !isspace(*char_ptr)) {
+			// Debugging
+			dbg_sprintf(dbgout, "*char_ptr = %c\n", *char_ptr);
+			char_ptr--;
+		};
 		
-		// If the selection never exceeded the first word, and the last_char_ptr is now
+		// If the selection never exceeded the first word, and the char_ptr is now
 		// equal to curr_line_ptr, increment char by char until you find the first space
-		if (*last_char_ptr == *curr_line_ptr)
-			while (*last_char_ptr != '\0' && !isspace(*++last_char_ptr));
+		while (*char_ptr != '\0' && !isspace(*char_ptr))
+			char_ptr++;
 		
-		*last_char_ptr = '\0';
+		if (*char_ptr == '\0')
+			end_of_text = true;
 		
-		//dbg_sprintf(dbgout, "*curr_line_ptr = %c\n", *curr_line_ptr);
+		*char_ptr = '\0';
+		
+		// Debugging
+		dbg_sprintf(dbgout, "Printing line...\n");
+		dbg_sprintf(dbgout, "*curr_line_ptr = %c\n", *curr_line_ptr);
 		gfx_PrintString(curr_line_ptr);
-		curr_line_ptr = ++last_char_ptr;
-		yPos += 10;
-	} while (*last_char_ptr != '\0');
-	
-	return;
+		if (!end_of_text) {
+			curr_line_ptr = ++char_ptr;
+			yPos += 10;
+		} else {
+			return;
+		};
+		
+		if (yPos >= LCD_HEIGHT)
+			return;
+	};
 }
 
 void textio_PrintTruncatedStringXY(char string[], uint24_t max_width, uint24_t xPos, uint8_t yPos) {
 	
 	uint24_t str_width;
 	uint8_t dots_width;
-	char *last_char_ptr;
+	char *char_ptr;
 	
 	dots_width = gfx_GetStringWidth("...");
 	gfx_SetTextXY(xPos, yPos);
@@ -82,11 +105,11 @@ void textio_PrintTruncatedStringXY(char string[], uint24_t max_width, uint24_t x
 		return;
 	};
 		
-	last_char_ptr = string + strlen(string);
+	char_ptr = string + strlen(string);
 		
 	do {
 		
-		*last_char_ptr-- = '\0';
+		*char_ptr-- = '\0';
 		str_width = gfx_GetStringWidth(string);
 	} while (str_width > (max_width - dots_width)) ;
 	
@@ -94,185 +117,10 @@ void textio_PrintTruncatedStringXY(char string[], uint24_t max_width, uint24_t x
 	return;
 }
 
-/*
-long int textio_NumericalInput(uint24_t xPos, uint8_t yPos, uint8_t buffer_size) {
-
-	char *buffer_ptr;						// Buffer for user input
-	char *number_ptr;						// Holds current char
-	char *temp_ptr;
-	uint8_t text_BG_color;
-	uint8_t text_FG_color = 0x00;
-	uint24_t cursor_xPos = xPos + 1;
-	uint24_t i;								// Counter variable
-	bool cursor_active = false;
-	uint8_t key = '\0';
-	const char *numbers  = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0369\0\0\0\0\0258\0\0\0\00147\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-	
-	// Debugging variables
-	//uint8_t j;
-	//char *pLetter;
-	
-	buffer_ptr = malloc(buffer_size * sizeof(char) + 1);
-	if (!buffer_ptr)
-		return NULL;
-	memset(buffer_ptr, '\0', buffer_size + 1);
-	
-	number_ptr = buffer_ptr;
-	
-	gfx_SetTextScale(1,1);
-	gfx_SetTextFGColor(text_FG_color);
-	
-	for (;;) {
-		
-		gfx_SetTextXY(xPos, yPos);
-		gfx_PrintString(buffer_ptr);
-		cursor_active = false;
-		
-		if (number_ptr < buffer_ptr + buffer_size) {
-			
-			cursor_active = true;
-			//dbg_sprintf(dbgout, "cursor_active = true\n");
-		};
-		
-		cursor_xPos = xPos + 1;
-		if (number_ptr > buffer_ptr)
-			cursor_xPos += gfx_GetStringWidth(buffer_ptr);
-		
-		
-		text_BG_color = gfx_GetPixel(cursor_xPos, yPos);
-		gfx_SetTextBGColor(text_BG_color);
-		gfx_SetTextTransparentColor(text_BG_color);
-		
-		/* Debugging
-		dbg_sprintf(dbgout, "number_ptr = %x\nbuffer_ptr = %x\n", number_ptr, buffer_ptr);
-		
-		dbg_sprintf(dbgout, "buffer =");
-	
-		pLetter = buffer_ptr;
-		for (j = 0; j < buffer_size; j++)
-			dbg_sprintf(dbgout, "  %x", *pLetter++);
-		
-		dbg_sprintf(dbgout, "\t|");
-		
-		pLetter = buffer_ptr;
-		for (j = 0; j < buffer_size; j++)
-			dbg_sprintf(dbgout," %c ", *pLetter++);
-		
-		dbg_sprintf(dbgout, "|\n");
-		*/ /*
-	
-	
-		// Wait for input and display cursor
-		do {
-		
-			if (cursor_active) {
-				gfx_SetColor(0x00);
-				gfx_Line(cursor_xPos, yPos - 1, cursor_xPos, yPos + 8);
-			};
-		
-			i = 0;
-		
-			do {
-				key = os_GetCSC();
-				i++;
-			} while (!key && i < 6000);
-		
-			if (cursor_active) {
-				gfx_SetColor(text_BG_color);
-				gfx_Line(cursor_xPos, yPos - 1, cursor_xPos, yPos + 8);			
-			};
-		
-			while (!key && i < 12000) {
-				key = os_GetCSC();
-				i++;
-			};
-		} while (!key);
-	
-		if (key == sk_Clear && cursor_xPos == (xPos + 1)))
-			return NULL;
-		
-		if (key == sk_Enter) {
-			
-			
-			/* Debugging
-			dbg_sprintf(dbgout, "buffer =");
-	
-			pLetter = buffer_ptr;
-			for (j = 0; j < buffer_size; j++)
-				dbg_sprintf(dbgout, "  %x", *pLetter++);
-		
-			dbg_sprintf(dbgout, "\t|");
-		
-			pLetter = buffer_ptr;
-			for (j = 0; j < buffer_size; j++)
-				dbg_sprintf(dbgout," %c ", *pLetter++);
-		
-			dbg_sprintf(dbgout, "|\n");
-			*/ /*
-			
-			// Return only the chars entered and remove
-			// all trailing null chars
-			
-			if (number_ptr > buffer_ptr) {
-				
-				temp_ptr = realloc(buffer_ptr, number_ptr - buffer_ptr + 1);
-				if (temp_ptr != NULL) {
-					
-					//dbg_sprintf(dbgout,"temp_ptr = %s\n", temp_ptr);
-					//dbg_sprintf(dbgout,"buffer_ptr = %s", buffer_ptr);
-					return (long int)buffer_ptr;
-				};
-				
-				//dbg_sprintf(dbgout,"realloc failed");
-				return NULL;
-			};
-			//dbg_sprintf(dbgout,"number_ptr is equal to buffer_ptr");
-			return NULL;
-		};
-		
-		if (key == sk_Clear) {
-			while (number_ptr > buffer_ptr)
-				*--number_ptr = '\0';
-			
-			gfx_SetColor(text_BG_color);
-			gfx_FillRectangle(xPos, yPos, cursor_xPos, 8);
-		};
-		
-		if ((key == sk_Del) && number_ptr > buffer_ptr) {
-			
-			number_ptr--;
-			
-			// Debugging
-			//dbg_sprintf(dbgout, "*number_ptr = %c\n&number_ptr = %x\n", *number_ptr, &number_ptr);
-			//dbg_sprintf(dbgout, "Deleted char\n");
-			
-			// Erase char
-			gfx_SetColor(text_BG_color);
-			gfx_FillRectangle(cursor_xPos - gfx_GetCharWidth(*number_ptr) - 1, yPos, gfx_GetCharWidth(*number_ptr), 8);
-			
-			*number_ptr = '\0';
-		} else {
-			// Debugging
-			//dbg_sprintf(dbgout, "Cannot delete char\n");
-		};
-				
-		if (cursor_active && numbers[key]) {
-			
-			*number_ptr = numbers[key];
-			
-			// Debugging
-			//dbg_sprintf(dbgout, "*number_ptr = %c\n&number_ptr = %x\n", *number_ptr, &number_ptr);
-			
-			number_ptr++;
-		} else {
-			// Debugging
-			//dbg_sprintf(dbgout, "No char added\n");
-		};
-		
-		delay(100);
-	};
+void textio_SetInputConfig(uint8_t text_FG_color, uint8_t cursor_color) {
+	input_config.text_FG_color = text_FG_color;
+	input_config.cursor_color = cursor_color;
 }
-*/
 
 void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_t yPos) {
 	
@@ -281,7 +129,6 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 	char *temp1;							// For letter insertion and general-purpose char pointing
 	char *temp2;
 	uint8_t text_BG_color;
-	uint8_t text_FG_color = 0x00;
 	uint24_t cursor_xPos = xPos + 1;
 	uint24_t i;								// Used for cursor timer variable and width of chars after cursor in delete routine
 	bool cursor_active = false;
@@ -294,7 +141,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 	char *letter_chk = '\0';
 	
 	gfx_SetTextScale(1,1);
-	gfx_SetTextFGColor(text_FG_color);
+	gfx_SetTextFGColor(input_config.text_FG_color);
 	curr_letter = buffer;
 	
 	for (;;) {
@@ -347,7 +194,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 		do {
 		
 			if (cursor_active) {
-				gfx_SetColor(0x00);
+				gfx_SetColor(input_config.cursor_color);
 				gfx_Line(cursor_xPos, yPos, cursor_xPos, yPos + 8);
 			};
 		
@@ -487,7 +334,7 @@ void textio_LetterInput(char *buffer, uint8_t buffer_size, uint24_t xPos, uint8_
 			gfx_SetColor(text_BG_color);
 			gfx_FillRectangle(cursor_xPos, yPos - 1, 9, 10);
 			gfx_SetTextBGColor(text_BG_color);
-			gfx_SetTextFGColor(text_FG_color);
+			gfx_SetTextFGColor(input_config.text_FG_color);
 			gfx_SetTextTransparentColor(text_BG_color);
 		};
 		
