@@ -1,8 +1,8 @@
 /*
  *--------------------------------------
- * Program Name: textioc
- * Version: 0.1.00
- * Author: Captain Calc
+ * Program Name: textioc wrapping text example
+ * Version: 1
+ * Author: beckadamtheinventor, Captain Calc
  * License:
  * Description: A library for advanced text
  * I/O for the TI-84 Plus CE

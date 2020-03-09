@@ -37,6 +37,7 @@ textio_PrintWrappedText:
 	or a,a
 	sbc hl,hl
 	ld l,(iy+12)
+	ld (.y),hl
 	push hl
 	ld hl,(iy+9)
 	push hl
@@ -48,10 +49,10 @@ textio_PrintWrappedText:
 	ld hl,(iy+3)
 .loop:
 	ld a,(hl)
+	inc hl
 	or a,a
 	ret z
 	ld e,a
-	inc hl
 	push hl
 	push de
 	call gfx_GetCharWidth
@@ -72,18 +73,20 @@ textio_PrintWrappedText:
 .nextline:
 	ld hl,0
 .y:=$-3
-	push hl
 	ld de,9
-textio_linespacing:=$-1
+textio_linespacing:=$-3
 	add hl,de
 	ld (.y),hl
 	ld de,231
 textio_margin_y:=$-3
 	or a,a
 	sbc hl,de
-	jr c,.exit
+	jr nc,.exit
+	add hl,de
+	push hl
 	ld hl,0
 .basex:=$-3
+	ld (.x),hl
 	push hl
 	call gfx_SetTextXY
 	pop hl
