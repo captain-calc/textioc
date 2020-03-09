@@ -7,7 +7,7 @@
 
 NAME        ?= DEMO
 COMPRESSED  ?= NO
-ICON        ?= iconc.png
+#ICON        ?= iconc.png
 DESCRIPTION ?= "textioc demo"
 
 # ----------------------------

@@ -23,7 +23,7 @@
 #include <graphx.h>
 #include <debug.h>
 
-#include "textioc.h"
+#include <textioc.h>
 
 void main(void) {
 	
