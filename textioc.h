@@ -17,14 +17,15 @@ void textio_PrintTruncatedStringXY(char string[], uint24_t max_width, uint24_t x
 
 /* Set configurations for textio_LetterInput.
  * Returns old colors in the lower two bytes of the returned integer.
+ * Default values are 0 and 240.
  */
 unsigned int textio_SetInputConfig(uint8_t text_FG_color, uint8_t cursor_color);
 
 
 /* Set configurations for textio_PrintWrappedText and textio_PrintTruncatedStringXY.
- * Returns old config in the lower two bytes of the returned integer.
+ * Default values are 231, 9, and 255.
  */
-unsigned int textio_SetTextConfig(uint8_t text_y_margin, uint8_t line_spacing);
+void textio_SetTextConfig(uint8_t text_y_margin, uint8_t line_spacing, uint8_t clear_color);
 
 /* Get string input. Returns pointer to input buffer.
  */
