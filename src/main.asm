@@ -195,11 +195,8 @@ textio_SetTextConfig:
 ;-------------------------------------------------------------------------------
 ;void textio_LetterInput(char buffer[], uint8_t buffer_size, uint24_t width, uint24_t xPos, uint8_t yPos);
 textio_LetterInput:
-	ld l,0
-.fg:=$-1
-	push hl
-	call gfx_SetTextFGColor
-	pop bc
+	call gfx_SetTextFGColor   ;so we can save the old color
+	ld (.svcolor),a
 	ld iy,0
 	add iy,sp
 	ld (.svsp),iy
@@ -226,30 +223,25 @@ textio_LetterInput:
 	push hl
 	ld de,(iy+9)
 	add hl,de
+	push hl         ;make textio_PrintTruncatedStringXY clear the cursor area on draw
+	ld de,-9        ;make room for the cursor in this routine
+	add hl,de
 	ld (.end_x),hl
-	push hl
 .draw:
 	ld hl,(.start)
 	push hl
+	ld l,0
+.fg:=$-1
+	push hl
+	call gfx_SetTextFGColor
+	pop bc
 	call textio_PrintTruncatedStringXY
 	pop hl ;pop the string
 	ld l,240
 .cursor:=$-1
 	push hl
-	call gfx_SetColor
+	call gfx_SetTextFGColor
 	pop bc
-	ld hl,9
-	push hl
-	push hl
-	call gfx_GetTextY
-	push hl
-	call gfx_GetTextX
-	push hl
-	call gfx_Rectangle ;draw the cursor outline
-	pop hl
-	pop hl
-	pop hl
-	pop hl
 	ld hl,textio_overtypes
 	ld de,0
 .mapno:=$-3
@@ -303,17 +295,17 @@ textio_LetterInput:
 	ld (de),a
 	push hl
 	call gfx_GetCharWidth
-	pop hl
-	ld l,a
-	ld bc,0
+	pop de
+	ld de,0
 .current_scroll:=$-3
-	add hl,bc
+	add hl,de
 	ld (.current_scroll),hl
-	ld bc,0
+	ex hl,de
+	ld hl,0
 .end_x:=$-3
 	or a,a
-	sbc hl,bc
-	jp c,.draw ;if we're not at the max X coord we don't need to scroll the string
+	sbc hl,de
+	jp nc,.draw ;if we're not at the max X coord we don't need to scroll the string
 	ld hl,(.start)
 	inc hl
 	ld (.start),hl
@@ -336,30 +328,35 @@ textio_LetterInput:
 	ld (.keymap),hl
 	jp .draw
 .delete:
-	ld de,(.buffer)
-	dec de
-	ld hl,0
+	ld hl,(.buffer)
+	dec hl
+	ld de,0
 .realstart:=$-3
 	or a,a
 	sbc hl,de
-	jp z,.key
-	ld (.buffer),de
-	ld a,(de)
+	jr c,.zeroit
+	add hl,de
+	ld (.buffer),hl
+	ld a,(hl)
+	ld (hl),0
 	or a,a
 	sbc hl,hl
 	ld l,a
-	push de
 	push hl
 	call gfx_GetCharWidth
 	pop bc
-	pop de
-	ld c,a
-	ld hl,(.current_scroll)
-	sbc hl,bc
-	jr c,.zeroit
-	xor a,a
-.setchar:
-	ld (de),a
+	ld de,(.current_scroll)
+	ex hl,de
+	or a,a
+	sbc hl,de
+	ld (.current_scroll),hl
+	ld de,(.start)
+	ld hl,(.realstart)
+	or a,a
+	sbc hl,de
+	jp z,.draw
+	dec de
+	ld (.start),de
 	jp .draw
 .zeroit:
 	xor a,a
@@ -367,22 +364,29 @@ textio_LetterInput:
 	ld (.current_scroll),hl
 	ld hl,(.realstart)
 	ld (.start),hl
-	jr .setchar
+	ld (hl),a
+	jp .draw
 .cancel:
 	ld (hl),0
 .enter:
 	ld sp,0
 .svsp:=$-3
+	ld l,0
+.svcolor:=$-1
+	push hl
+	call gfx_SetTextFGColor
+	pop hl
+	ld hl,(.realstart)
 	ret
 .nextmap:
 	ld a,(.mapno)
 	cp a,2
 	jr z,.zero
 	inc a
-	jr .cont2
+	jp .cont2
 .zero:
 	xor a,a
-	jr .cont2
+	jp .cont2
 
 
 
