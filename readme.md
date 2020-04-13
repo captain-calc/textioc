@@ -1,107 +1,158 @@
 {\rtf1\adeflang1025\ansi\ansicpg1252\uc1\adeff0\deff0\stshfdbch31505\stshfloch31506\stshfhich31506\stshfbi0\deflang1033\deflangfe1033\themelang1033\themelangfe0\themelangcs0{\fonttbl{\f0\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f2\fbidi \fmodern\fcharset0\fprq1{\*\panose 02070309020205020404}Courier New;}
-{\f34\fbidi \froman\fcharset0\fprq2{\*\panose 02040503050406030204}Cambria Math;}{\flomajor\f31500\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
-{\fdbmajor\f31501\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\fhimajor\f31502\fbidi \fswiss\fcharset0\fprq2{\*\panose 020f0302020204030204}Calibri Light;}
-{\fbimajor\f31503\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\flominor\f31504\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
-{\fdbminor\f31505\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\fhiminor\f31506\fbidi \fswiss\fcharset0\fprq2{\*\panose 020f0502020204030204}Calibri;}
-{\fbiminor\f31507\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f458\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\f459\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}
-{\f461\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\f462\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\f463\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f464\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
-{\f465\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\f466\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f478\fbidi \fmodern\fcharset238\fprq1 Courier New CE;}{\f479\fbidi \fmodern\fcharset204\fprq1 Courier New Cyr;}
-{\f481\fbidi \fmodern\fcharset161\fprq1 Courier New Greek;}{\f482\fbidi \fmodern\fcharset162\fprq1 Courier New Tur;}{\f483\fbidi \fmodern\fcharset177\fprq1 Courier New (Hebrew);}{\f484\fbidi \fmodern\fcharset178\fprq1 Courier New (Arabic);}
-{\f485\fbidi \fmodern\fcharset186\fprq1 Courier New Baltic;}{\f486\fbidi \fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f798\fbidi \froman\fcharset238\fprq2 Cambria Math CE;}{\f799\fbidi \froman\fcharset204\fprq2 Cambria Math Cyr;}
-{\f801\fbidi \froman\fcharset161\fprq2 Cambria Math Greek;}{\f802\fbidi \froman\fcharset162\fprq2 Cambria Math Tur;}{\f805\fbidi \froman\fcharset186\fprq2 Cambria Math Baltic;}{\f806\fbidi \froman\fcharset163\fprq2 Cambria Math (Vietnamese);}
-{\flomajor\f31508\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\flomajor\f31509\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\flomajor\f31511\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}
-{\flomajor\f31512\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\flomajor\f31513\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\flomajor\f31514\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
-{\flomajor\f31515\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\flomajor\f31516\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fdbmajor\f31518\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}
-{\fdbmajor\f31519\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\fdbmajor\f31521\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\fdbmajor\f31522\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}
-{\fdbmajor\f31523\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\fdbmajor\f31524\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\fdbmajor\f31525\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}
-{\fdbmajor\f31526\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fhimajor\f31528\fbidi \fswiss\fcharset238\fprq2 Calibri Light CE;}{\fhimajor\f31529\fbidi \fswiss\fcharset204\fprq2 Calibri Light Cyr;}
-{\fhimajor\f31531\fbidi \fswiss\fcharset161\fprq2 Calibri Light Greek;}{\fhimajor\f31532\fbidi \fswiss\fcharset162\fprq2 Calibri Light Tur;}{\fhimajor\f31533\fbidi \fswiss\fcharset177\fprq2 Calibri Light (Hebrew);}
-{\fhimajor\f31534\fbidi \fswiss\fcharset178\fprq2 Calibri Light (Arabic);}{\fhimajor\f31535\fbidi \fswiss\fcharset186\fprq2 Calibri Light Baltic;}{\fhimajor\f31536\fbidi \fswiss\fcharset163\fprq2 Calibri Light (Vietnamese);}
-{\fbimajor\f31538\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fbimajor\f31539\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\fbimajor\f31541\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}
-{\fbimajor\f31542\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fbimajor\f31543\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\fbimajor\f31544\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
-{\fbimajor\f31545\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fbimajor\f31546\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\flominor\f31548\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}
-{\flominor\f31549\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\flominor\f31551\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\flominor\f31552\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}
-{\flominor\f31553\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\flominor\f31554\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\flominor\f31555\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}
-{\flominor\f31556\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fdbminor\f31558\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fdbminor\f31559\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}
-{\fdbminor\f31561\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\fdbminor\f31562\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fdbminor\f31563\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}
-{\fdbminor\f31564\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\fdbminor\f31565\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fdbminor\f31566\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}
-{\fhiminor\f31568\fbidi \fswiss\fcharset238\fprq2 Calibri CE;}{\fhiminor\f31569\fbidi \fswiss\fcharset204\fprq2 Calibri Cyr;}{\fhiminor\f31571\fbidi \fswiss\fcharset161\fprq2 Calibri Greek;}{\fhiminor\f31572\fbidi \fswiss\fcharset162\fprq2 Calibri Tur;}
-{\fhiminor\f31573\fbidi \fswiss\fcharset177\fprq2 Calibri (Hebrew);}{\fhiminor\f31574\fbidi \fswiss\fcharset178\fprq2 Calibri (Arabic);}{\fhiminor\f31575\fbidi \fswiss\fcharset186\fprq2 Calibri Baltic;}
-{\fhiminor\f31576\fbidi \fswiss\fcharset163\fprq2 Calibri (Vietnamese);}{\fbiminor\f31578\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fbiminor\f31579\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}
-{\fbiminor\f31581\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\fbiminor\f31582\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fbiminor\f31583\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}
-{\fbiminor\f31584\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\fbiminor\f31585\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fbiminor\f31586\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}}
-{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;
-\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;\red0\green0\blue0;\red0\green0\blue0;}{\*\defchp \fs22\loch\af31506\hich\af31506\dbch\af31505 }{\*\defpap 
-\ql \li0\ri0\sa160\sl259\slmult1\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 }\noqfpromote {\stylesheet{\ql \li0\ri0\sa160\sl259\slmult1\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 
-\af0\afs22\alang1025 \ltrch\fcs0 \fs22\lang1033\langfe1033\loch\f31506\hich\af31506\dbch\af31505\cgrid\langnp1033\langfenp1033 \snext0 \sqformat \spriority0 Normal;}{\*\cs10 \additive \ssemihidden \sunhideused \spriority1 Default Paragraph Font;}{\*
+{\f3\fbidi \froman\fcharset2\fprq2{\*\panose 05050102010706020507}Symbol;}{\f10\fbidi \fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}{\f34\fbidi \froman\fcharset0\fprq2{\*\panose 02040503050406030204}Cambria Math;}
+{\flomajor\f31500\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\fdbmajor\f31501\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
+{\fhimajor\f31502\fbidi \fswiss\fcharset0\fprq2{\*\panose 020f0302020204030204}Calibri Light;}{\fbimajor\f31503\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
+{\flominor\f31504\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\fdbminor\f31505\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
+{\fhiminor\f31506\fbidi \fswiss\fcharset0\fprq2{\*\panose 020f0502020204030204}Calibri;}{\fbiminor\f31507\fbidi \froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f43\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}
+{\f44\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\f46\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\f47\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\f48\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}
+{\f49\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f50\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\f51\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f63\fbidi \fmodern\fcharset238\fprq1 Courier New CE;}
+{\f64\fbidi \fmodern\fcharset204\fprq1 Courier New Cyr;}{\f66\fbidi \fmodern\fcharset161\fprq1 Courier New Greek;}{\f67\fbidi \fmodern\fcharset162\fprq1 Courier New Tur;}{\f68\fbidi \fmodern\fcharset177\fprq1 Courier New (Hebrew);}
+{\f69\fbidi \fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f70\fbidi \fmodern\fcharset186\fprq1 Courier New Baltic;}{\f71\fbidi \fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f383\fbidi \froman\fcharset238\fprq2 Cambria Math CE;}
+{\f384\fbidi \froman\fcharset204\fprq2 Cambria Math Cyr;}{\f386\fbidi \froman\fcharset161\fprq2 Cambria Math Greek;}{\f387\fbidi \froman\fcharset162\fprq2 Cambria Math Tur;}{\f390\fbidi \froman\fcharset186\fprq2 Cambria Math Baltic;}
+{\f391\fbidi \froman\fcharset163\fprq2 Cambria Math (Vietnamese);}{\flomajor\f31508\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\flomajor\f31509\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}
+{\flomajor\f31511\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\flomajor\f31512\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\flomajor\f31513\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}
+{\flomajor\f31514\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\flomajor\f31515\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\flomajor\f31516\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}
+{\fdbmajor\f31518\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fdbmajor\f31519\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\fdbmajor\f31521\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}
+{\fdbmajor\f31522\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fdbmajor\f31523\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\fdbmajor\f31524\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
+{\fdbmajor\f31525\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fdbmajor\f31526\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fhimajor\f31528\fbidi \fswiss\fcharset238\fprq2 Calibri Light CE;}
+{\fhimajor\f31529\fbidi \fswiss\fcharset204\fprq2 Calibri Light Cyr;}{\fhimajor\f31531\fbidi \fswiss\fcharset161\fprq2 Calibri Light Greek;}{\fhimajor\f31532\fbidi \fswiss\fcharset162\fprq2 Calibri Light Tur;}
+{\fhimajor\f31533\fbidi \fswiss\fcharset177\fprq2 Calibri Light (Hebrew);}{\fhimajor\f31534\fbidi \fswiss\fcharset178\fprq2 Calibri Light (Arabic);}{\fhimajor\f31535\fbidi \fswiss\fcharset186\fprq2 Calibri Light Baltic;}
+{\fhimajor\f31536\fbidi \fswiss\fcharset163\fprq2 Calibri Light (Vietnamese);}{\fbimajor\f31538\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fbimajor\f31539\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}
+{\fbimajor\f31541\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\fbimajor\f31542\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fbimajor\f31543\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}
+{\fbimajor\f31544\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\fbimajor\f31545\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fbimajor\f31546\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}
+{\flominor\f31548\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\flominor\f31549\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\flominor\f31551\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}
+{\flominor\f31552\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\flominor\f31553\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\flominor\f31554\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
+{\flominor\f31555\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\flominor\f31556\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fdbminor\f31558\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}
+{\fdbminor\f31559\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\fdbminor\f31561\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}{\fdbminor\f31562\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}
+{\fdbminor\f31563\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\fdbminor\f31564\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\fdbminor\f31565\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}
+{\fdbminor\f31566\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\fhiminor\f31568\fbidi \fswiss\fcharset238\fprq2 Calibri CE;}{\fhiminor\f31569\fbidi \fswiss\fcharset204\fprq2 Calibri Cyr;}
+{\fhiminor\f31571\fbidi \fswiss\fcharset161\fprq2 Calibri Greek;}{\fhiminor\f31572\fbidi \fswiss\fcharset162\fprq2 Calibri Tur;}{\fhiminor\f31573\fbidi \fswiss\fcharset177\fprq2 Calibri (Hebrew);}
+{\fhiminor\f31574\fbidi \fswiss\fcharset178\fprq2 Calibri (Arabic);}{\fhiminor\f31575\fbidi \fswiss\fcharset186\fprq2 Calibri Baltic;}{\fhiminor\f31576\fbidi \fswiss\fcharset163\fprq2 Calibri (Vietnamese);}
+{\fbiminor\f31578\fbidi \froman\fcharset238\fprq2 Times New Roman CE;}{\fbiminor\f31579\fbidi \froman\fcharset204\fprq2 Times New Roman Cyr;}{\fbiminor\f31581\fbidi \froman\fcharset161\fprq2 Times New Roman Greek;}
+{\fbiminor\f31582\fbidi \froman\fcharset162\fprq2 Times New Roman Tur;}{\fbiminor\f31583\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\fbiminor\f31584\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}
+{\fbiminor\f31585\fbidi \froman\fcharset186\fprq2 Times New Roman Baltic;}{\fbiminor\f31586\fbidi \froman\fcharset163\fprq2 Times New Roman (Vietnamese);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;
+\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;
+\red192\green192\blue192;\red0\green0\blue0;\red0\green0\blue0;}{\*\defchp \fs22\loch\af31506\hich\af31506\dbch\af31505 }{\*\defpap \ql \li0\ri0\sa160\sl259\slmult1\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 }
+\noqfpromote {\stylesheet{\ql \li0\ri0\sa160\sl259\slmult1\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs22\alang1025 \ltrch\fcs0 
+\fs22\lang1033\langfe1033\loch\f31506\hich\af31506\dbch\af31505\cgrid\langnp1033\langfenp1033 \snext0 \sqformat \spriority0 Normal;}{\*\cs10 \additive \ssemihidden \sunhideused \spriority1 Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tblind0\tblindtype3\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv \ql \li0\ri0\sa160\sl259\slmult1
 \widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs22\alang1025 \ltrch\fcs0 \fs22\lang1033\langfe1033\loch\f31506\hich\af31506\dbch\af31505\cgrid\langnp1033\langfenp1033 \snext11 \ssemihidden \sunhideused 
-Normal Table;}}{\*\rsidtbl \rsid4472497\rsid4789357\rsid13513312\rsid16139689}{\mmathPr\mmathFont34\mbrkBin0\mbrkBinSub0\msmallFrac0\mdispDef1\mlMargin0\mrMargin0\mdefJc1\mwrapIndent1440\mintLim0\mnaryLim1}{\info{\operator M}
-{\creatim\yr2020\mo4\dy12\hr20\min6}{\revtim\yr2020\mo4\dy12\hr20\min11}{\version4}{\edmins2}{\nofpages2}{\nofwords284}{\nofchars1622}{\nofcharsws1903}{\vern125}}{\*\xmlnstbl {\xmlns1 http://schemas.microsoft.com/office/word/2003/wordml}}
-\paperw12240\paperh15840\margl1440\margr1440\margt1440\margb1440\gutter0\ltrsect 
+Normal Table;}}{\*\listtable{\list\listtemplateid1275752500\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0\levelindent0{\leveltext\leveltemplateid999862698\'01\u-3913 ?;}{\levelnumbers;}
+\loch\af3\hich\af3\dbch\af31505\fbias0\hres0\chhres0 \fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}
+\f2\fbias0\hres0\chhres0 \fi-360\li1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}
+\f10\fbias0\hres0\chhres0 \fi-360\li2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}
+\f3\fbias0\hres0\chhres0 \fi-360\li2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0\hres0\chhres0 
+\fi-360\li3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0\hres0\chhres0 
+\fi-360\li4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0\hres0\chhres0 
+\fi-360\li5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0\hres0\chhres0 \fi-360\li5760\lin5760 }
+{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\lvltentative\levelspace0\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0\hres0\chhres0 \fi-360\li6480\lin6480 }{\listname 
+;}\listid1546985822}}{\*\listoverridetable{\listoverride\listid1546985822\listoverridecount0\ls1}}{\*\rsidtbl \rsid4472497\rsid4789357\rsid5725036\rsid9068966\rsid13513312\rsid16139689}{\mmathPr\mmathFont34\mbrkBin0\mbrkBinSub0\msmallFrac0\mdispDef1
+\mlMargin0\mrMargin0\mdefJc1\mwrapIndent1440\mintLim0\mnaryLim1}{\info{\operator M}{\creatim\yr2020\mo4\dy12\hr20\min6}{\revtim\yr2020\mo4\dy13\hr11\min50}{\version6}{\edmins11}{\nofpages2}{\nofwords304}{\nofchars1734}{\nofcharsws2034}{\vern125}}
+{\*\xmlnstbl {\xmlns1 http://schemas.microsoft.com/office/word/2003/wordml}}\paperw12240\paperh15840\margl1440\margr1440\margt1440\margb1440\gutter0\ltrsect 
 \widowctrl\ftnbj\aenddoc\trackmoves0\trackformatting1\donotembedsysfont0\relyonvml0\donotembedlingdata1\grfdocevents0\validatexml0\showplaceholdtext0\ignoremixedcontent0\saveinvalidxml0\showxmlerrors0\horzdoc\dghspace120\dgvspace120\dghorigin1701
 \dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\rsidroot16139689 \fet0{\*\wgrffmtfilter 2450}\ilfomacatclnup0\ltrpar \sectd \ltrsect\linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2
 \pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6
 \pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang 
 {\pntxtb (}{\pntxta )}}\pard\plain \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 \rtlch\fcs1 \af0\afs22\alang1025 \ltrch\fcs0 
-\fs22\lang1033\langfe1033\loch\af31506\hich\af31506\dbch\af31505\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689 \hich\af2\dbch\af31505\loch\f2 #\hich\af2\dbch\af31505\loch\f2  TEXTIOC}{\rtlch\fcs1 \af2 \ltrch\fcs0 
-\f2\insrsid16139689\charrsid16139689 
+\fs22\lang1033\langfe1033\loch\af31506\hich\af31506\dbch\af31505\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 #}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 
+\f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 #}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2  TEXTIOC}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 
+\f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2  Change Log}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 ##}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 #}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2  Version 0.1.00}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Comments}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 :}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 First version. Written in C using the CE SDK by the CE Programming Team.
 \par 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312 \hich\af2\dbch\af31505\loch\f2 ## Ver\hich\af2\dbch\af31505\loch\f2 sion 0.1.00}{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312\charrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689\charrsid16139689 \hich\af2\dbch\af31505\loch\f2 Comments:
-\par \hich\af2\dbch\af31505\loch\f2 First version. Written\hich\af2\dbch\af31505\loch\f2  in C using the CE SDK by the CE Programming Team.
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 New }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Functions:
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 textio_PrintWrappedTextXY
+
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_PrintTruncatedStringXY
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_LetterInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_SetInputConfig
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 ##}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 #}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2  Version 0.2.00}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Comments:
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Rewrote textio_LetterInput in\hich\af2\dbch\af31505\loch\f2 
+ order to add automatic text scrolling, optimize text redrawing, and add custom keymaps. Renamed it textio_CustomInput. The textio_PrgmNameInput function does not support the theta character.
 \par 
-\par \hich\af2\dbch\af31505\loch\f2 Functions:
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_PrintWrappedTextXY
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_PrintTruncatedStringXY
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_LetterInput
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_SetInputConfig
-\par 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312 \hich\af2\dbch\af31505\loch\f2 ## Version 0.2.00}{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312\charrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689\charrsid16139689 \hich\af2\dbch\af31505\loch\f2 Comments:
-\par \hich\af2\dbch\af31505\loch\f2 Rewrote textio_LetterInput in order to add automatic text scrolling, optimize text redrawing, and add custom keymaps. Renamed it textio_CustomInput. The textio_PrgmNameInput function does not support the theta char
-\hich\af2\dbch\af31505\loch\f2 acter.
-\par 
-\par \hich\af2\dbch\af31505\loch\f2 Functions:
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_CustomInput
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_SetPrgmNameFlag
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_LetterInput (new version based on textio_CustomInput)
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_NumericalInput
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_LetterNumInput
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_PrgmNameInput
-\par 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 New }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Functions:}{\rtlch\fcs1 
+\af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 textio_CustomInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_SetPrgmNameFlag
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_LetterInput (new version based on textio_CustomInput)
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_NumericalInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_LetterNumInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_PrgmNameInput
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
 \par \hich\af2\dbch\af31505\loch\f2 Function Renaming:
-\par \hich\af2\dbch\af31505\loch\f2 textio_SetInputConfig -> textio_SetInputColorConfig
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 
+textio_SetInputConfig -> textio_SetInputColorConfig
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par \hich\af2\dbch\af31505\loch\f2 Features:}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 
+Text scrolling for the input functions
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 
+Added a flag to textio_CustomInput that forces an input method suitable for a TI-OS program name
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 ##}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 #}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 \hich\f2  Version 0.3.00 (in progress\'85\loch\f2 )}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid13513312\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Comments:
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Forcing textio_Input to exit after each keypress will allow the progra\hich\af2\dbch\af31505\loch\f2 
+m to immediately evaluate the input that has just been received. This immediate evaluation can be used to create text suggestion functions or to stop the input function when the user enters a certain amount or type of input.
 \par 
-\par \hich\af2\dbch\af31505\loch\f2 Features:
-\par \hich\af2\dbch\af31505\loch\f2 [+] Text scrolling for the input functions
-\par \hich\af2\dbch\af31505\loch\f2 [+] Added a flag to textio_CustomInput that forces an input method suitable for a TI-OS program name
-\par 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312 \hich\af2\dbch\af31505\loch\f2 ## \hich\af2\dbch\af31505\loch\f2 Version 0.3.00\hich\af2\dbch\af31505\loch\f2  (in progress\loch\af2\dbch\af31505\hich\f2 \'85\hich\af2\dbch\af31505\loch\f2 )}{\rtlch\fcs1 
-\af2 \ltrch\fcs0 \f2\insrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid13513312\charrsid16139689 
-\par }{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid16139689\charrsid16139689 \hich\af2\dbch\af31505\loch\f2 Comments:
-\par \hich\af2\dbch\af31505\loch\f2 Forcing textio_Input to exit after each keypress will allow the program to immediately evaluate the input that has just been received. This im\hich\af2\dbch\af31505\loch\f2 
-mediate evaluation can be used to create text suggestion functions or to stop the input function when the user enters a certain amount or type of input.
-\par 
-\par \hich\af2\dbch\af31505\loch\f2 The changes outlined below for textio_PrintTextXY will make the function more useful for a text editor\hich\af2\dbch\af31505\loch\f2 . It will also aid the creation of a scroll bar function.
-\par 
-\par \hich\af2\dbch\af31505\loch\f2 Functions:
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_SetLineHeight
-\par \hich\af2\dbch\af31505\loch\f2 [+] textio_SetVertTabHeight
-\par 
-\par \hich\af2\dbch\af31505\loch\f2 Function Renaming:
-\par \hich\af2\dbch\af31505\loch\f2 textio_CustomInput -> textio_Input
-\par \hich\af2\dbch\af31505\loch\f2 textio_LetterInput -> textio_AlphaInput
-\par \hich\af2\dbch\af31505\loch\f2 textio_LetterNumInput -> textio_AlphaN\hich\af2\dbch\af31505\loch\f2 umInput
-\par \hich\af2\dbch\af31505\loch\f2 textio_PrintWrappedText -> textio_PrintTextXY
-\par 
-\par \hich\af2\dbch\af31505\loch\f2 Features:
-\par \hich\af2\dbch\af31505\loch\f2 [+] Double-buffering support for all input functions
-\par \hich\af2\dbch\af31505\loch\f2 [+] Made textio_Input exit after each keypress (this applies to all of the input functions)
-\par \hich\af2\dbch\af31505\loch\f2 [+] Adde\hich\af2\dbch\af31505\loch\f2 d line limit and inital line number parameters to textio_PrintTextXY}{\rtlch\fcs1 \af2 \ltrch\fcs0 \f2\insrsid4789357\charrsid16139689 
+\par \hich\af2\dbch\af31505\loch\f2 The changes outlined below for\hich\af2\dbch\af31505\loch\f2  textio_PrintTextXY will make the function more useful for a text editor. It will also aid the creation of a scroll bar function.}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 New }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 Functions:}{\rtlch\fcs1 
+\af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 textio_SetLineHeight
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_Set}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 
+\f2\fs20\insrsid5725036\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 TabWidth}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid5725036\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid5725036\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 
+textio_Set\hich\af2\dbch\af31505\loch\f2 up
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par \hich\af2\dbch\af31505\loch\f2 Function Renaming:}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 
+textio_CustomInput -> textio_Input
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_LetterInput -> textio_AlphaInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_LetterNumInput -> textio_AlphaNumInput
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 textio_PrintWrappedText -> textio_PrintTextXY
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16139689 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 
+\par \hich\af2\dbch\af31505\loch\f2 Features:}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid9068966 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 
+Double-buffering support for all input functions
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 Made textio_Input e\hich\af2\dbch\af31505\loch\f2 
+xit after each keypress (this applies to all of the input functions)
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid16139689\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 Added }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 
+\f2\fs20\insrsid9068966\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 tab handling, newline character handling, }{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 line limit}{\rtlch\fcs1 
+\af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid9068966\charrsid5725036 ,}{\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid16139689\charrsid5725036 \hich\af2\dbch\af31505\loch\f2  and inital line number parameters to textio_PrintTextXY}{\rtlch\fcs1 \af2\afs20 
+\ltrch\fcs0 \f2\fs20\insrsid4789357\charrsid5725036 
+\par }\pard \ltrpar\ql \li0\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid5725036 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid5725036\charrsid5725036 
+\par \hich\af2\dbch\af31505\loch\f2 New Internal Library Routines:
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid5725036\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}}\pard \ltrpar
+\ql \fi-360\li720\ri0\widctlpar\wrapdefault\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin720\itap0\pararsid5725036 {\rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f2\fs20\insrsid5725036\charrsid5725036 \hich\af2\dbch\af31505\loch\f2 get
+\hich\af2\dbch\af31505\loch\f2 WordWidth
+\par {\listtext\pard\plain\ltrpar \rtlch\fcs1 \af2\afs20 \ltrch\fcs0 \f3\fs20\insrsid5725036\charrsid5725036 \loch\af3\dbch\af31505\hich\f3 \'b7\tab}\hich\af2\dbch\af31505\loch\f2 is\hich\af2\dbch\af31505\loch\f2 cntrl\hich\af2\dbch\af31505\loch\f2  (
+\hich\af2\dbch\af31505\loch\f2 determine\hich\af2\dbch\af31505\loch\f2 s \hich\af2\dbch\af31505\loch\f2 if the passed char is a null, \hich\af2\dbch\af31505\loch\f2 a \hich\af2\dbch\af31505\loch\f2 newline, or \hich\af2\dbch\af31505\loch\f2 a tab
+\hich\af2\dbch\af31505\loch\f2 )
 \par }{\*\themedata 504b030414000600080000002100e9de0fbfff0000001c020000130000005b436f6e74656e745f54797065735d2e786d6cac91cb4ec3301045f748fc83e52d4a
 9cb2400825e982c78ec7a27cc0c8992416c9d8b2a755fbf74cd25442a820166c2cd933f79e3be372bd1f07b5c3989ca74aaff2422b24eb1b475da5df374fd9ad
 5689811a183c61a50f98f4babebc2837878049899a52a57be670674cb23d8e90721f90a4d2fa3802cb35762680fd800ecd7551dc18eb899138e3c943d7e503b6
@@ -246,8 +297,8 @@ fffffffffffffffffdfffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-ffffffffffffffffffffffffffffffff52006f006f007400200045006e00740072007900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000500ffffffffffffffffffffffff0c6ad98892f1d411a65f0040963251e5000000000000000000000000f0fa
-bc753011d601feffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000
+ffffffffffffffffffffffffffffffff52006f006f007400200045006e00740072007900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000500ffffffffffffffffffffffff0c6ad98892f1d411a65f0040963251e50000000000000000000000004095
+db9db311d601feffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffff000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000105000000000000}}

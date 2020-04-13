@@ -26,7 +26,6 @@ input_config_t input_config;
 
 typedef struct {
 	uint24_t horiz_tab_width;
-	uint8_t vert_tab_height;		// vert_tab_height must be a multiple of line_height
 	uint8_t line_height;
 } output_config_t;
 
@@ -44,7 +43,6 @@ void textio_Setup(void) {
 	input_config.text_FG_color = 0x00;
 	input_config.cursor_color = 0x00;
 	output_config.horiz_tab_width = 4;
-	output_config.vert_tab_height = 2;
 	output_config.line_height = 9;
 }
 
@@ -52,17 +50,26 @@ void textio_Setup(void) {
 // INTERNAL LIBRARY ROUTINES
 //============================================================
 
+int iscntrl(int c) {
+	switch (c) {
+		case '\0':
+		case '\n':
+		case '\t':
+		return 1;
+		default:
+		return 0;
+	};
+}
+
 // This function works on the assumption that the longest word is <256 characters long
 uint8_t getWordWidth(char *word) {
 	char *c = word;
 	uint8_t width = 0;
 
-	while (!isspace(*c) && *c != '\0' && width < 240)
+	while (!isspace(*c) && !iscntrl(*c) && width < 240)
 		width += gfx_GetCharWidth(*c++);
 	return width;
 }
-
-
 	
 
 // TEXT OUTPUT FUNCTIONS
@@ -115,7 +122,7 @@ void textio_PrintTextXY(char *text, uint8_t initial_line_num, uint8_t num_lines,
 			// else, start a new line
 			if (curr_line_width + word_width < line_width) {
 				curr_line_width += word_width;
-				while (!isspace(*curr_char) && *curr_char != '\0' && *curr_char != '\n') {
+				while (!iscntrl(*curr_char) && !isspace(*curr_char)) {
 					dbg_sprintf(dbgout, "%c", *curr_char);
 					gfx_PrintChar(*curr_char++);
 				};
@@ -147,10 +154,6 @@ void textio_PrintTextXY(char *text, uint8_t initial_line_num, uint8_t num_lines,
 				dbg_sprintf(dbgout, "Handling newline...\n");
 				goto startLine;
 				
-				case '\v':
-				dbg_sprintf(dbgout, "Handling vertical tab...\n");
-				goto startLine;
-				
 				case ' ':
 				dbg_sprintf(dbgout, "Handling space...\n");
 				gfx_PrintChar(*(curr_char - 1));
@@ -162,12 +165,7 @@ void textio_PrintTextXY(char *text, uint8_t initial_line_num, uint8_t num_lines,
 
 		startLine:
 
-		if (*(curr_char - 1) == '\v') {
-			for (i = 1; i < output_config.vert_tab_height; i++)
-				curr_line_num++;
-		} else {
-			curr_line_num++;
-		};
+		curr_line_num++;
 		dbg_sprintf(dbgout, "Line: %d -------------\n", curr_line_num);
 	};
 }
@@ -204,7 +202,9 @@ void textio_SetLineHeight(uint8_t pxl_height) {
 	output_config.line_height = pxl_height;
 }
 
-
+void textio_SetTabWidth(uint24_t width) {
+	output_config.horiz_tab_width = width;
+}
 
 
 // TEXT INPUT FUNCTIONS

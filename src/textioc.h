@@ -11,6 +11,7 @@ void textio_Setup(void);
 // INTERNAL LIBRARY ROUTINES
 //============================================================
 
+int iscntrl(int c);
 uint8_t getWordWidth(char *word);
 
 
@@ -19,16 +20,10 @@ uint8_t getWordWidth(char *word);
 
 void textio_PrintTextXY(char *text, uint8_t initial_line_num, uint8_t num_lines, uint24_t xPos, uint8_t yPos, uint24_t width);
 void textio_PrintTruncatedStringXY(char string[], uint24_t max_width, uint24_t xPos, uint8_t yPos);
-/*-----------------------------------------------
-max_width is in pixels
------------------------------------------------*/
+/* max_width is in pixels */
 
 void textio_SetLineHeight(uint8_t pxl_height);
-void textio_SetVertTabHeight(uint8_t tab_height);
-/*-----------------------------------------------
-The height of the vertical tab is equal to 
-tab_height times the current line height.
------------------------------------------------*/
+void textio_SetTabWidth(uint8_t tab_height);
 
 
 // TEXT INPUT FUNCTIONS

@@ -27,7 +27,7 @@
 
 void main(void) {
 	
-	char *text = "Squire Trelawney, Dr. Livesey, and the rest of these gentlemen\n having asked me to write down the whole particulars about Treasure Island, from the beginning to the end, keeping nothing back but the bearings of the island, and that only because there is still treasure not yet lifted, I take up my pen in the year of grace 17__ and go back to the time when my father kept the Admiral Benbow inn and the brown old seaman with the sabre cut first took up his lodging under our roof.";
+	char *text = "\t\tSquire Trelawney, Dr. Livesey, and the rest of these gentlemen\n having asked me to write down the whole particulars about Treasure Island, from the beginning to the end, keeping nothing back but the bearings of the island, and that only because there is still treasure not yet lifted, I take up my pen in the year of grace 17__ and go back to the time when my father kept the Admiral Benbow inn and the brown old seaman with the sabre cut first took up his lodging under our roof.";
 	
 	gfx_Begin();
 	
