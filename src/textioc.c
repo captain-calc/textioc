@@ -76,8 +76,6 @@ uint8_t getWordWidth(char *word) {
 //============================================================
 
 
-// IMPORTANT: The control character handling in this function does not work yet.
-
 void textio_PrintTextXY(char *text, uint8_t initial_line_num, uint8_t num_lines, uint24_t xPos, uint8_t yPos, uint24_t line_width) {
 	
 	char *curr_char;
