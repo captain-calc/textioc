@@ -1,6 +1,6 @@
 ## TEXTIOC Change Log
 
-### Version 0.1.00
+### Version 0.1
 
 Comments:
 
@@ -12,7 +12,7 @@ New Functions:
 * textio_LetterInput
 * textio_SetInputConfig
 
-### Version 0.2.00
+### Version 0.2
 
 Comments:
 
@@ -33,7 +33,7 @@ Features:
 * Text scrolling for the input functions
 * Added a flag to textio_CustomInput that forces an input method suitable for a TI-OS program name
 
-### Version 0.3.00 (in progress…)
+### Version 0.3
 
 Comments:
 
@@ -60,3 +60,10 @@ Features:
 New Internal Library Routines:
 * getWordWidth
 * iscntrl	(determines if the passed char is a null, a newline, or a tab)
+
+
+### Version 0.4 (in progress...)
+
+Comments:
+
+A complete port of the library from C to eZ80 Assembly. Drops GraphX font support and adds FontLibC support.
