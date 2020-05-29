@@ -1,0 +1,687 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -debug -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\DBG\CALCDBG.C"
+	.assume ADL=1
+.DEBUG "C"
+	SEGMENT CODE
+.BEGREC "fmt_type",19
+.DEFINE "status"
+.VALUE 0
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "flags"
+.VALUE 1
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "size"
+.VALUE 2
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "chr"
+.VALUE 3
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "type"
+.VALUE 4
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "field_width"
+.VALUE 5
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "precision"
+.VALUE 6
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "set_begin"
+.VALUE 7
+.CLASS 8
+.TYPE 34
+.ENDEF
+.DEFINE "set_end"
+.VALUE 10
+.CLASS 8
+.TYPE 34
+.ENDEF
+.DEFINE "pad_whole"
+.VALUE 13
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "pad_pre_fract"
+.VALUE 14
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "pad_post_fract"
+.VALUE 15
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "pad_at"
+.VALUE 16
+.CLASS 8
+.TYPE 34
+.ENDEF
+.ENDREC "fmt_type"
+.BEGREC "flt_info",12
+.DEFINE "flags"
+.VALUE 0
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "exp"
+.VALUE 1
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "digits"
+.VALUE 2
+.CLASS 8
+.DIM 10
+.TYPE 108
+.ENDEF
+.ENDREC "flt_info"
+.BEGREC "NONAME0",6
+.DEFINE "quot"
+.VALUE 0
+.CLASS 8
+.TYPE 4
+.ENDEF
+.DEFINE "rem"
+.VALUE 3
+.CLASS 8
+.TYPE 4
+.ENDEF
+.ENDREC "NONAME0"
+.BEGREC "NONAME1",8
+.DEFINE "quot"
+.VALUE 0
+.CLASS 8
+.TYPE 5
+.ENDEF
+.DEFINE "rem"
+.VALUE 4
+.CLASS 8
+.TYPE 5
+.ENDEF
+.ENDREC "NONAME1"
+.BEGREC "header",6
+.DEFINE "s"
+.VALUE 0
+.CLASS 11
+.TAG "NONAME2"
+.TYPE 8
+.ENDEF
+.DEFINE "x"
+.VALUE 0
+.CLASS 11
+.TYPE 2
+.ENDEF
+.ENDREC "header"
+.BEGREC "NONAME2",6
+.DEFINE "ptr"
+.VALUE 0
+.CLASS 8
+.TAG "header"
+.TYPE 40
+.ENDEF
+.DEFINE "size"
+.VALUE 3
+.CLASS 8
+.TYPE 14
+.ENDEF
+.ENDREC "NONAME2"
+.BEGREC "NONAME3",9
+.DEFINE "sign"
+.VALUE 0
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "exp"
+.VALUE 1
+.CLASS 8
+.TYPE 2
+.ENDEF
+.DEFINE "mant"
+.VALUE 2
+.CLASS 8
+.DIM 7
+.TYPE 108
+.ENDEF
+.ENDREC "NONAME3"
+.BEGREC "NONAME4",18
+.DEFINE "real"
+.VALUE 0
+.CLASS 8
+.TAG "NONAME3"
+.TYPE 8
+.ENDEF
+.DEFINE "imag"
+.VALUE 9
+.CLASS 8
+.TAG "NONAME3"
+.TYPE 8
+.ENDEF
+.ENDREC "NONAME4"
+.BEGREC "NONAME5",11
+.DEFINE "dim"
+.VALUE 0
+.CLASS 8
+.TYPE 13
+.ENDEF
+.DEFINE "items"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TAG "NONAME3"
+.TYPE 104
+.ENDEF
+.ENDREC "NONAME5"
+.BEGREC "NONAME6",20
+.DEFINE "dim"
+.VALUE 0
+.CLASS 8
+.TYPE 13
+.ENDEF
+.DEFINE "items"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TAG "NONAME4"
+.TYPE 104
+.ENDEF
+.ENDREC "NONAME6"
+.BEGREC "NONAME7",11
+.DEFINE "cols"
+.VALUE 0
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "rows"
+.VALUE 1
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "items"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TAG "NONAME3"
+.TYPE 104
+.ENDEF
+.ENDREC "NONAME7"
+.BEGREC "NONAME8",3
+.DEFINE "len"
+.VALUE 0
+.CLASS 8
+.TYPE 13
+.ENDEF
+.DEFINE "data"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TYPE 98
+.ENDEF
+.ENDREC "NONAME8"
+.BEGREC "NONAME9",3
+.DEFINE "len"
+.VALUE 0
+.CLASS 8
+.TYPE 13
+.ENDEF
+.DEFINE "data"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TYPE 98
+.ENDEF
+.ENDREC "NONAME9"
+.BEGREC "NONAME10",3
+.DEFINE "size"
+.VALUE 0
+.CLASS 8
+.TYPE 13
+.ENDEF
+.DEFINE "data"
+.VALUE 2
+.CLASS 8
+.DIM 1
+.TYPE 108
+.ENDEF
+.ENDREC "NONAME10"
+.BEGREC "font",12
+.DEFINE "font"
+.VALUE 0
+.CLASS 8
+.TAG "font"
+.TYPE 40
+.ENDEF
+.DEFINE "drawChar"
+.VALUE 3
+.CLASS 8
+.TYPE 545
+.ENDEF
+.DEFINE "getWidth"
+.VALUE 6
+.CLASS 8
+.TYPE 558
+.ENDEF
+.DEFINE "getHeight"
+.VALUE 9
+.CLASS 8
+.TYPE 558
+.ENDEF
+.ENDREC "font"
+.BEGREC "system_info",40
+.DEFINE "size"
+.VALUE 0
+.CLASS 8
+.TYPE 14
+.ENDEF
+.DEFINE "hardwareVersion"
+.VALUE 3
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "hardwareType"
+.VALUE 4
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "hardwareType2"
+.VALUE 5
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "osMajorVersion"
+.VALUE 6
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "osMinorVersion"
+.VALUE 7
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "osRevisionVersion"
+.VALUE 8
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "osBuildVersion"
+.VALUE 9
+.CLASS 8
+.TYPE 14
+.ENDEF
+.DEFINE "bootMajorVersion"
+.VALUE 12
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "bootMinorVersion"
+.VALUE 13
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "bootRevisionVersion"
+.VALUE 14
+.CLASS 8
+.TYPE 12
+.ENDEF
+.DEFINE "bootBuildVersion"
+.VALUE 15
+.CLASS 8
+.TYPE 14
+.ENDEF
+.DEFINE "unknown"
+.VALUE 18
+.CLASS 8
+.DIM 10
+.TYPE 108
+.ENDEF
+.DEFINE "calcid"
+.VALUE 28
+.CLASS 8
+.DIM 8
+.TYPE 108
+.ENDEF
+.DEFINE "ti"
+.VALUE 36
+.CLASS 8
+.DIM 2
+.TYPE 98
+.ENDEF
+.DEFINE "language"
+.VALUE 38
+.CLASS 8
+.TYPE 13
+.ENDEF
+.ENDREC "system_info"
+.BEGREC "__stdio_file",1
+.DEFINE "slot"
+.VALUE 0
+.CLASS 8
+.TYPE 12
+.ENDEF
+.ENDREC "__stdio_file"
+;    1	#include "calcdbg.h"
+;    2	
+;    3	#include <debug.h>
+;    4	
+;    5	void calcdbg_dump(const char *data_buffer, const int length) {
+_calcdbg_dump:
+.DEFINE "_calcdbg_dump"
+
+.VALUE _calcdbg_dump
+
+.CLASS 2
+
+.TYPE 65
+
+.ENDEF
+
+.BEGFUNC "calcdbg_dump",5,"_calcdbg_dump"
+
+.LINE 5
+
+.DEFINE "data_buffer"
+
+.CLASS 65
+
+.VALUE 6
+
+.TYPE 194
+
+.ENDEF
+
+.DEFINE "length"
+
+.CLASS 65
+
+.VALUE 9
+
+.TYPE 4
+
+.ENDEF
+
+.DEFINE "j"
+
+.CLASS 65
+
+.VALUE -3
+
+.TYPE 14
+
+.ENDEF
+
+.DEFINE "i"
+
+.CLASS 65
+
+.VALUE -6
+
+.TYPE 14
+
+.ENDEF
+
+.DEFINE "byte"
+
+.CLASS 65
+
+.VALUE -7
+
+.TYPE 2
+
+.ENDEF
+
+	PUSH	IX
+	LD	IX,0
+	ADD	IX,SP
+	LEA	HL,IX+-13
+	LD	SP,HL
+;    6		char byte;
+;    7		unsigned int i, j;
+;    8	
+;    9		for (i = 0; i < length; i++) {
+.LINE 9
+
+	LD	BC,0
+	LD	(IX+-6),BC
+	JR	L_19
+L_17:
+;   10			byte = data_buffer[i];
+.LINE 10
+
+	LD	BC,(IX+-6)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	(IX+-13),HL
+;   11			dbg_sprintf(dbgout, "%2x ", data_buffer[i]);
+.LINE 11
+
+	LD	A,(HL)
+	LD	B,A
+	SEXT	HL
+	LD	L,B
+	PUSH	HL
+	LD	BC,L__0
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+	POP	BC
+;   12			if ((i % 16) == 15 || (i == length - 1)) {
+.LINE 12
+
+	LD	A,(IX+-6)
+	AND	A,15
+	UEXT	HL
+	LD	L,A
+	LD	(IX+-10),HL
+	LD	BC,15
+	LD	HL,(IX+-10)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_15
+	LD	HL,(IX+9)
+	DEC	HL
+	LD	BC,(IX+-6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_16
+L_15:
+;   13				for (j = 0; j < 15 - (i % 16); j++)
+.LINE 13
+
+	LD	BC,0
+	LD	(IX+-3),BC
+	JR	L_5
+L_3:
+;   14					dbg_sprintf(dbgout, "       ");
+.LINE 14
+
+	LD	BC,L__3
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+L_5:
+	LD	HL,15
+	LD	BC,(IX+-10)
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,HL
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_3
+;   15				dbg_sprintf(dbgout, "| ");
+.LINE 15
+
+	LD	BC,L__5
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+;   16				for (j = (i - (i % 16)); j <= i; j++) {
+.LINE 16
+
+	LD	BC,(IX+-10)
+	LD	HL,(IX+-6)
+	OR	A,A
+	SBC	HL,BC
+	LD	(IX+-3),HL
+	JR	L_13
+L_11:
+;   17					byte = data_buffer[j];
+.LINE 17
+
+	LD	BC,(IX+-3)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	A,(HL)
+	LD	(IX+-7),A
+;   18					if ((byte > 31) && (byte < 127))
+.LINE 18
+
+	LD	A,31
+	CP	A,(IX+-7)
+	CALL	__setflag
+	JP	P,L_10
+	LD	A,(IX+-7)
+	CP	A,127
+	CALL	__setflag
+	JP	P,L_10
+;   19						dbg_sprintf(dbgout, "%c", byte);
+.LINE 19
+
+	LD	A,(IX+-7)
+	SEXT	HL
+	LD	L,(IX+-7)
+	PUSH	HL
+	LD	BC,L__8
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+	POP	BC
+;   20					else
+.LINE 20
+
+	JR	L_12
+L_10:
+;   21						dbg_sprintf(dbgout, ".");
+.LINE 21
+
+	LD	BC,L__9
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+;   22				};
+L_12:
+.LINE 22
+
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+L_13:
+	LD	BC,(IX+-3)
+	LD	HL,(IX+-6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_11
+;   23				dbg_sprintf(dbgout, "\n");
+.LINE 23
+
+	LD	BC,L__11
+	PUSH	BC
+	LD	BC,16449536
+	PUSH	BC
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+;   24			};
+L_16:
+.LINE 24
+
+	LD	BC,(IX+-6)
+	INC	BC
+	LD	(IX+-6),BC
+;   25		};
+L_19:
+.LINE 25
+
+	LD	BC,(IX+9)
+	LD	HL,(IX+-6)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_17
+;   26		return;
+.LINE 27
+
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _calcdbg_dump ***************************
+;Name                         Addr/Register   Size   Type
+;_sprintf                            IMPORT  -----   function
+;G_0                                  IX-10      3   variable
+;byte                                  IX-7      1   variable
+;i                                     IX-6      3   variable
+;j                                     IX-3      3   variable
+;length                                IX+9      3   parameter
+;data_buffer                           IX+6      3   parameter
+
+
+; Stack Frame Size: 25 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+.ENDFUNC "calcdbg_dump",27,"_calcdbg_dump"
+	SEGMENT STRSECT
+L__0:
+	DB	"%2x "
+	DB	0
+L__3:
+	DB	"       "
+	DB	0
+L__5:
+	DB	"| "
+	DB	0
+L__8:
+	DB	"%c"
+	DB	0
+L__9:
+	DB	"."
+	DB	0
+L__11:
+	DB	10,0
+	XREF _sprintf:ROM
+	XREF __setflag:ROM
+	XDEF _calcdbg_dump
+	END
