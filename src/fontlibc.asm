@@ -3,7 +3,7 @@ include '../include/library.inc'
 include '../include/include_library.inc'
 ;-------------------------------------------------------------------------------
 
-library 'FONTLIBC',1
+library 'FONTLIBC',2
 
 ;-------------------------------------------------------------------------------
 ; Dependencies
@@ -43,9 +43,12 @@ include_library '../graphx/graphx.asm'
 	export fontlib_SetNewlineCode
 	export fontlib_GetNewlineCode
 	export fontlib_SetAlternateStopCode
-	export fontlib_SetAlternateStopCode
+	export fontlib_GetAlternateStopCode
 	export fontlib_SetFirstPrintableCodePoint
 	export fontlib_GetFirstPrintableCodePoint
+	export fontlib_SetDrawIntCodePoints
+	export fontlib_GetDrawIntMinus
+	export fontlib_GetDrawIntZero
 	export fontlib_GetGlyphWidth
 	export fontlib_GetStringWidth
 	export fontlib_GetStringWidthL
@@ -53,11 +56,28 @@ include_library '../graphx/graphx.asm'
 	export fontlib_DrawGlyph
 	export fontlib_DrawString
 	export fontlib_DrawStringL
+	export fontlib_DrawInt
+	export fontlib_DrawUInt
 	export fontlib_ClearEOL
 	export fontlib_ClearWindow
 	export fontlib_Newline
 	export fontlib_SetNewlineOptions
 	export fontlib_GetNewlineOptions
+;-------------------------------------------------------------------------------
+; v1 font pack functions
+;-------------------------------------------------------------------------------
+	export fontlib_GetFontPackName
+	export fontlib_GetFontByIndex
+	export fontlib_GetFontByIndexRaw
+	export fontlib_GetFontByStyle
+	export fontlib_GetFontByStyleRaw
+;-------------------------------------------------------------------------------
+; v2 functions
+;-------------------------------------------------------------------------------
+	export fontlib_ScrollWindowDown
+	export fontlib_ScrollWindowUp
+	export fontlib_Home
+	export fontlib_HomeUp
 
 
 ;-------------------------------------------------------------------------------
@@ -77,7 +97,7 @@ arg4		:= 15
 arg5		:= 18
 arg6		:= 21
 chFirstPrintingCode := $10
-chNewLine	:= $0A
+chNewline	:= $0A
 bEnableAutoWrap	:= 0
 mEnableAutoWrap	:= 1 shl bEnableAutoWrap
 bAutoClearToEOL	:= 1
@@ -86,12 +106,14 @@ bPreclearNewline := 2
 mPreclearNewline := 1 shl bPreclearNewline
 bWasNewline	:= 7
 mWasNewline	:= 1 shl bWasNewline
+bAutoScroll	:= 3
+mAutoScroll	:= 1 shl bAutoScroll
 
 
 ;-------------------------------------------------------------------------------
 ; Declare the structure of a raw font
 struc strucFont
-	label .: 13
+	label .: 15
 	.version			rb	1
 	.height				rb	1
 	.totalGlyphs			rb	1
@@ -101,11 +123,23 @@ struc strucFont
 	.italicSpaceAdjust		rb	1
 	.spaceAbove			rb	1
 	.spaceBelow			rb	1
+	.weight				rb	1
+	.style				rb	1
 end struc
 virtual at 0
 strucFont strucFont
 end virtual
 strucFont.fontPropertiesSize := strucFont.italicSpaceAdjust
+struc strucFontPackHeader
+	label .: 13
+	.identifier			rb	8
+	.metadatOffset			rl	1
+	.fontCount			rb	1
+	.fontList			rl	1
+end struc
+virtual at 0
+strucFontPackHeader strucFontPackHeader
+end virtual
 
 
 ;-------------------------------------------------------------------------------
@@ -257,10 +291,11 @@ fontlib_GetWindowWidth:
 ;  None
 ; Returns:
 ;  Data
+; Should preserve DE, as window scrolling needs DE preserved
 	ld	hl,(_TextXMax)
-	ld	de,(_TextXMin)
+	ld	bc,(_TextXMin)
 	or	a,a
-	sbc	hl,de
+	sbc	hl,bc
 	ret
 
 
@@ -343,6 +378,31 @@ fontlib_ShiftCursorPosition:
 	ex	de,hl			; hl = return vector
 	jp	(hl)
 
+
+;-------------------------------------------------------------------------------
+fontlib_HomeUp:
+; Moves the cursor to the upper left corner of the text window
+; Arguments:
+;  None
+; Returns:
+;  Nothing
+	ld	a,(_TextYMin)
+	ld	(_TextY),a
+; Fall through to fontlib_Home
+assert $ = fontlib_Home
+
+
+;-------------------------------------------------------------------------------
+; Moves the cursor back to the start of the current line
+fontlib_Home:
+; Arguments:
+;  None
+; Returns:
+;  Nothing
+	ld	hl,(_TextXMin)
+	ld	(_TextX),hl
+	ret
+
 	
 ;-------------------------------------------------------------------------------
 fontlib_SetFont:
@@ -398,7 +458,18 @@ fontlib_SetFont:
 	add	hl,de
 	add	hl,bc
 	ld	(iy + strucFont.bitmapsTablePtr),hl
-	ld	a,1
+; Check for the ignore ling spacing flag
+	ld	hl,arg0
+	add	hl,sp
+	ld	a,(hl)
+	or	a
+	jr	z,.true
+	lea	hl,iy + strucFont.spaceAbove
+	xor	a
+	ld	(hl),a
+	inc	hl
+	ld	(hl),a
+.true:	ld	a,1
 	ret
 .false:
 	xor	a,a
@@ -411,7 +482,7 @@ fontlib_DrawGlyph:
 ; Arguments:
 ;  arg0: codepoint
 ; Returns:
-;  Nothing
+;  New X cursor value
 	ld	hl,arg0
 	add	hl,sp
 	ld	a,(hl)
@@ -442,11 +513,11 @@ fontlib_DrawGlyph:
 ;-------------------------------------------------------------------------------
 util.DrawGlyphRaw:
 ; Handles the actual main work of drawing a glyph.
-; Inputs:
+; Arguments:
 ;  HL: Draw pointer
 ;  A: Glyph index
 ;  Font properties variables
-; Outputs:
+; Returns:
 ;  IYL: Width of glyph (not including any italicSpaceAdjust)
 ;  IYH: Zero
 ;  IYU: Untouched
@@ -475,12 +546,12 @@ assert $ = util.DrawGlyphRawKnownWidth
 ;-------------------------------------------------------------------------------
 util.DrawGlyphRawKnownWidth:
 ; Handles the actual main work of drawing a glyph.
-; Inputs:
+; Arguments:
 ;  DE: Draw pointer
 ;  C: Glyph index, with _CurrentFontProperties.firstGlyph subtracted out
 ;  A: Glyph width
 ;  Font properties variables
-; Outputs:
+; Returns:
 ;  IYL: Width of glyph (not including any italicSpaceAdjust)
 ;  IYH: Zero
 ;  IYU: Untouched
@@ -614,13 +685,13 @@ smcByte _TextStraightRowDelta
 
 util.DrawEmptyLines:
 ; Internal routine that draws empty space for a glyph
-; Inputs:
+; Arguments:
 ;  A: Number of lines to draw (nonzero)
 ;  B: -1 = opaque, 0 = transparent
 ;  IYL: Width of line to draw
 ;  DE: Drawing target
 ;  (_TextStraightRowDelta - 2): Row delta
-; Output:
+; Returns:
 ;  Lines drawn
 ; Destroys:
 ;  AF
@@ -658,11 +729,11 @@ fontlib_DrawString:
 ; Draws a string,ending when either:
 ;  an unknown control code is encountered (or NULL), or there is no more space
 ;  left in the window.
-; Inputs:
+; Arguments:
 ;  arg0: Pointer to string
 ;  arg1: Maximum number of characters have been printed
-; Outputs:
-;  Stuff printed
+; Returns:
+;  New X cursor value
 	pop	bc
 	ld	(.retter + 1),bc
 	pop	de
@@ -682,11 +753,11 @@ fontlib_DrawStringL:
 ;  arg1 characters have been printed;
 ;  an unknown control code is encountered (or NULL); or,
 ;  there is no more space left in the window.
-; Inputs:
+; Arguments:
 ;  arg0: Pointer to string
 ;  arg1: Maximum number of characters have been printed
-; Outputs:
-;  Stuff printed
+; Returns:
+;  New X cursor value
 	push	ix
 ; Since reentrancy isn't likely to be needed. . . .
 ; Instead of using stack locals, just access all our local and global
@@ -733,7 +804,8 @@ fontlib_DrawStringL:
 	jr	z,.exit
 	cp	a,(ix + newLineCode)
 	jr	z,.printNewline
-.exit:	pop	ix
+.exit:	ld	hl,(ix + textX)
+	pop	ix
 	ret
 .notControlCode:
 	cp	a,(ix + alternateStopCode)
@@ -803,6 +875,96 @@ fontlib_DrawStringL:
 	dec	hl
 	ld	(ix + strReadPtr),hl
 	jp	.restartX
+
+
+;-------------------------------------------------------------------------------
+fontlib_DrawInt:
+; Places an int at the current cursor position
+; Shamelessly ripped from GraphX, which admittedly adapted it from Z80 Bits
+; Arguments:
+;  arg0 : Number to print
+;  arg1 : Number of characters to print
+; Returns:
+;  None
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	add	hl,hl
+	db	$3E			; xor a,a -> ld a,*
+	
+;-------------------------------------------------------------------------------
+fontlib_DrawUInt:
+; Places an unsigned int at the current cursor position
+; Arguments:
+;  arg0 : Number to print
+;  arg1 : Minimum number of characters to print
+; Returns:
+;  None
+	xor	a,a
+	pop	de
+	pop	hl			; hl = uint
+	pop	bc			; c = min num chars
+	push	bc
+	push	hl
+	push	de
+	jr	nc,.begin		; c ==> actually a negative int
+	ex	de,hl
+	or	a,a
+	sbc	hl,hl
+	sbc	hl,de			; hl = -int
+	ld	a,'-'
+smcByte _DrawIntMinus
+	call	.printchar
+	dec	c
+	jr	nz,.begin
+	inc	c
+.begin:
+	ld	de,-10000000
+	call	.num1
+	ld	de,-1000000
+	call	.num1
+	ld	de,-100000
+	call	.num1
+	ld	de,-10000
+	call	.num1
+	ld	de,-1000
+	call	.num1
+	ld	de,-100
+	call	.num1
+	ld	de,-10
+	call	.num1
+	ld	de,-1
+.num1:
+	xor	a,a
+.num2:
+	inc	a
+	add	hl,de
+	jr	c,.num2
+	sbc	hl,de
+	dec	a			; a = next digit
+	jr	nz,.printdigit		; z ==> digit is zero, maybe don't print
+	ld	a,c
+	inc	c
+	cp	a,8
+	ret	c			; nc ==> a digit has already been
+					;        printed, or must start printing
+					;        to satisfy min num chars
+	xor	a,a
+.printdigit:
+	add	a,'0'
+smcByte _DrawIntZero
+	ld	c,a			; mark that a digit has been printed
+.printchar:
+	push	bc
+	push	hl
+	ld	c,a
+	push	bc
+	call	fontlib_DrawGlyph
+	pop	bc
+	pop	hl
+	pop	bc
+	ret
 
 
 ;-------------------------------------------------------------------------------
@@ -1115,6 +1277,45 @@ fontlib_GetFirstPrintableCodePoint:
 
 
 ;-------------------------------------------------------------------------------
+fontlib_SetDrawIntCodePoints:
+; Changes the code points printed using DrawInt/DrawUInt
+; Arguments:
+;  arg0: Negative symbol code point
+;  arg1: Zero glyph code point
+; Returns:
+;  Nothing
+	ld	iy,0
+	add	iy,sp
+	ld	a,(iy + arg0)
+	ld	(_DrawIntMinus),a
+	ld	a,(iy + arg1)
+	ld	(_DrawIntZero),a
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetDrawIntMinus:
+; Returns the minus code point used by DrawInt/DrawUInt
+; Arguments:
+;  None
+; Returns:
+;  Minus
+	ld	a, (_DrawIntMinus)
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetDrawIntZero:
+; Returns the '0' code point used by DrawInt/DrawUInt
+; Arguments:
+;  None
+; Returns:
+;  '0'
+	ld	a, (_DrawIntZero)
+	ret
+
+
+;-------------------------------------------------------------------------------
 fontlib_GetGlyphWidth:
 ; Returns the width of a given glyph.
 ; Arguments:
@@ -1292,10 +1493,10 @@ fontlib_GetCharactersRemaining:
 ;-------------------------------------------------------------------------------
 fontlib_ClearWindow:
 ; Erases the entire text window.
-; Inputs:
+; Arguments:
 ;  None
-; Outputs:
-;  None
+; Returns:
+;  Nothing
 	ld	hl,(_TextX)
 	push	hl
 	ld	a,(_TextY)
@@ -1312,7 +1513,6 @@ fontlib_ClearWindow:
 	ld	a,(_TextYMax)
 	sub	a,b
 	ld	b,a
-	ld	b,a
 	call	util.ClearRect
 	pop	af
 	ld	(_TextY),a
@@ -1324,9 +1524,9 @@ fontlib_ClearWindow:
 ;-------------------------------------------------------------------------------
 fontlib_SetNewlineOptions:
 ; Sets options for controlling newline behavior
-; Inputs:
+; Arguments:
 ;  arg0: Flags for newline behavior
-; Outputs:
+; Returns:
 ;  None
 	ld	hl,arg0
 	add	hl,sp
@@ -1338,9 +1538,9 @@ fontlib_SetNewlineOptions:
 ;-------------------------------------------------------------------------------
 fontlib_GetNewlineOptions:
 ; Returns current newline flags
-; Inputs:
+; Arguments:
 ;  None
-; Outputs:
+; Returns:
 ;  Current newline flags
 	ld	a,(_TextNewlineControl)
 	ret
@@ -1348,11 +1548,12 @@ fontlib_GetNewlineOptions:
 
 ;-------------------------------------------------------------------------------
 fontlib_Newline:
-; Prints a newline,may trigger pre/post clear
-; Inputs:
+; Prints a newline, may trigger pre/post clear and scrolling
+; Arguments:
 ;  None
-; Outputs:
-;  None
+; Returns:
+;  A = 0 on success
+;  A > 0 if the text window is full
 	ld	iy,DataBaseAddr
 	bit	bAutoClearToEOL,(iy + newlineControl)
 ; I hate how nearly every time I think CALL cc or RET cc would be useful
@@ -1366,12 +1567,19 @@ fontlib_Newline:
 	add	a,(iy + strucFont.spaceBelow)
 	ld	b,a
 	add	a,a
-	jr	c,.outOfSpace		; Carry = definitely went past YMax
-	add	a,(iy + textY)
+	jr	c,.noScroll			; Carry = definitely went past YMax
+	add	a,(iy + textY)			; And scrolling is not valid if height > 127
 	jr	c,.outOfSpace
 	cp	a,(iy + textYMax)
-	jr	c,.checkPreClear
+	jr	z,.writeCursorY
+	jr	c,.writeCursorY
 .outOfSpace:
+	bit	bAutoScroll,(iy + newlineControl)
+	jr	z,.noScroll
+	call	fontlib_ScrollWindowDown
+	ld	iy,DataBaseAddr			; Don't need to write textY---cursor 
+	jr	.checkPreClear			; didn't actually move!
+.noScroll:
 	ld	a,1
 	bit	bEnableAutoWrap,(iy + newlineControl)
 	ret	z
@@ -1379,10 +1587,11 @@ fontlib_Newline:
 	ld	(iy + textY),a
 	ld	a,1
 	ret
-.checkPreClear:
+.writeCursorY:
 	sub	a,b
 	ld	(iy + textY),a
-	xor	a,a
+.checkPreClear:
+	xor	a
 	bit	bPreclearNewline,(iy + newlineControl)
 	ret	z
 ; Fall through to ClearEOL
@@ -1392,18 +1601,17 @@ assert $ = fontlib_ClearEOL
 ;-------------------------------------------------------------------------------
 fontlib_ClearEOL:
 ; Erases everything from the cursor to the right side of the text window.
-; Inputs:
+; Arguments:
 ;  None
-; Outputs:
-;  None
+; Returns:
+;  A = 0
 ; Compute the rectangle size to clear
 	ld	de,(_TextX)
 	ld	hl,(_TextXMax)
-	or	a,a
+	xor	a,a
 	sbc	hl,de
 	ret	c
 	ret	z
-	dec	hl
 	ex	de,hl
 	ld	a,(_CurrentFontProperties.height)
 	ld	hl,_CurrentFontProperties.spaceAbove
@@ -1427,7 +1635,7 @@ util.ClearRect:
 ;  AF, BC, DE, HL, IY
 
 ; Check for trivial case
-	ld	b,a
+	ld	a,b
 	or	a,a
 	ret	z
 	ld	a,e
@@ -1480,7 +1688,365 @@ util.ClearRect:
 
 
 ;-------------------------------------------------------------------------------
+fontlib_ScrollWindowDown:
+; Scrolls the contents of the text window down one line, i.e. everything in the
+; window is copied UP one line, thus yielding the effect of scrolling down.
+; The current text cursor is ignored.  The bottom line is not erased; you must
+; erase or overwrite it yourself.
+; Arguments:
+;  None
+; Returns:
+;  A = 0
+	ld	de,LcdWidth
+	call	.part1
+; Compute write pointer
+	ld	hl,(_TextYMin)
+	call	.part2
+; Compute read pointer as HL += LcdWidth * CurrentFontHeight
+	add	hl,bc
+	add	hl,bc
+.part3:
+; Compute number of lines to copy as _TextYMax - _TextYMin - CurrentFontHeight
+	ld	c,a
+	ld	a,(_TextYMin)
+	ld	b,a
+	ld	a,(_TextYMax)
+	sub	a,b
+	ret	c
+;	ret	z			; Implied by checking carry & zero flags below
+	sub	a,c
+	ret	c
+	ret	z
+	cp	c			; If window can't fit two full lines of text,
+	ret	c			; then there's no point in scrolling
+; Now copy some pixels
+	call	gfx_Wait
+.copy:	lea	bc,iy + 0
+	ldir
+	ld	bc,0			; SMC
+.delta := $ - 3
+	add	hl,bc			; Update read and write pointers
+	ex	de,hl
+	add	hl,bc
+	ex	de,hl
+	dec	a
+	jr	nz,.copy
+	ret
+
+.part1:
+; Get width loop control first
+	call	fontlib_GetWindowWidth
+	pop	bc
+	ret	c
+	ret	z
+	push	bc
+	push	hl
+	pop	iy			; Stash it in IY for quick access
+	ex	de,hl
+	sbc	hl,de			; carry reset from above
+	ld	(.delta),hl
+; Now is a good time to call this internal routine
+	jp	fontlib_GetCurrentFontHeight	; A has height
+
+.part2:
+	ld	h,LcdWidth / 2
+	mlt	hl
+	add	hl,hl
+	ld	de,(_TextXMin)
+	add	hl,de
+	ld	de,(CurrentBuffer)
+	add	hl,de
+; Copy HL to DE
+	ex	de,hl
+	sbc	hl,hl			; carry should be reset or else we're vomiting all over RAM
+	add	hl,de
+; Start computing read pointer
+	ld	c,a
+	ld	b,LcdWidth / 2
+	mlt	bc
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_ScrollWindowUp:
+; Scrolls the contents of the text window up one line, i.e. everything in the
+; window is copied DOWN one line, thus yielding the effect of scrolling up.
+; The current text cursor is ignored.  The top line is not erased; you must
+; erase or overwrite it yourself.
+; Arguments:
+;  None
+; Returns:
+;  Nothing
+	ld	de,-LcdWidth
+	call	fontlib_ScrollWindowDown.part1
+; Compute write pointer
+	ld	hl,(_TextYMax)
+	dec	l
+	call	fontlib_ScrollWindowDown.part2
+; Compute read pointer as HL -= LcdWidth * CurrentFontHeight
+	sbc	hl,bc
+	sbc	hl,bc
+	jr	fontlib_ScrollWindowDown.part3
+
+
+;-------------------------------------------------------------------------------
+; Font Pack Support
+;-------------------------------------------------------------------------------
+
+
+;-------------------------------------------------------------------------------
+util.GetFontPackData:
+; Attempts to get a pointer to a font pack's data based on its appvar's name.
+; Arguments:
+;  HL: Pointer to name string
+; Returns:
+;  HL: Pointer to byte after "FONTPACK", or NULL on failure
+;  DE: Pointer to start of "FONTPACK", or garbage on failure
+;  Carry set if appvar not found, or not a font pack; NC on success
+	dec	hl
+	ld	iy,flags
+	call	_Mov9ToOP1
+	ld	a,AppVarObj
+	ld	(OP1),a
+	call	_ChkFindSym
+	jr	c,.error
+	ex	de,hl
+	ld	a,b
+	cp	a,$D0
+	jr	nc,.headerCheck
+; Sadly, TI doesn't kindly provide us with a direct pointer; we have to account
+; for the archive header ourselves.
+	ld	de,9
+	add	hl,de
+	ld	e,(hl)
+	inc	hl
+	add	hl,de
+.headerCheck:
+; Check header
+	inc	hl
+	inc	hl
+	push	hl
+	call	util.VerifyHeader
+	pop	de
+	jr	nz,.error
+	ret
+.error:
+	or	a,a
+	sbc	hl,hl
+	scf
+	ret
+
+
+;-------------------------------------------------------------------------------
+util.VerifyHeader:
+; Verify that HL points to something that looks somewhat like a font pack.
+; Arguments:
+;  HL: Pointer to supposed font pack
+; Returns:
+;  Z if the check passes, NZ if not
+;  HL points to byte after 'K'
+; Destroys:
+;  A, B, DE
+	ld	de,_FontPackHeaderString
+	ld	b,8
+.loop:	ld	a,(de)
+	inc	de
+	cp	(hl)
+	inc	hl
+	ret	nz
+	djnz	.loop
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetFontPackName:
+; Returns a pointer to the font pack's name string.  Useful in a loop using
+; ti_Detect().
+; Arguments:
+;  arg0: Pointer to font pack appvar name
+; Returns:
+;  Pointer, or NULL if no name
+	ld	hl,arg0
+	add	hl,sp
+	ld	hl,(hl)
+	call	util.GetFontPackData
+	ret	c
+; Check metadata offset field
+	ld	bc,0
+	ld	hl,(hl)
+	sbc	hl,bc
+	ret	z
+; Check name field
+	add	hl,de
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)
+	sbc	hl,bc
+	ret	z
+	add	hl,de
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetFontByIndex:
+; Returns a pointer to a font in a font pack, based on an index.
+; Arguments:
+;  arg0: Pointer to font pack's name
+;  arg1: Index
+; Returns:
+;  Pointer, or NULL if error
+	ld	iy,0
+	add	iy,sp
+	ld	hl,(iy + arg0)
+	push	iy
+	call	util.GetFontPackData
+	pop	iy
+	ret	c
+	ld	(iy + arg0),de
+; Fall through to GetFontByIndexRaw
+assert $ = fontlib_GetFontByIndexRaw
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetFontByIndexRaw:
+; Returns a pointer to a font in a font pack, based on an index.
+; Arguments:
+;  arg0: Pointer to first data byte of font pack
+;  arg1: Index
+; Returns:
+;  Pointer, or NULL if error
+	ld	iy,0
+	add	iy,sp
+	ld	hl,(iy + arg0)
+; Get font count
+	ld	de,strucFontPackHeader.fontCount
+	add	hl,de
+	ld	a,(hl)
+	inc	hl
+; Validate index
+	ld	c, (iy + arg1)
+	cp	c
+	jr	c,.error
+	jr	z,.error
+; Get offset to font
+	ld	b,3
+	mlt	bc
+	add	hl,bc
+	ld	hl,(hl)
+	ld	de,(iy + arg0)
+	add	hl,de
+	ret
+.error:
+	or	a
+	sbc	hl,hl
+	ret
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetFontByStyle:
+; Searches for a font in a font pack given a set of properties.
+; Arguments:
+;  arg0: Pointer to font pack's name
+;  arg1: Minimum acceptable size
+;  arg2: Maximum acceptable size
+;  arg3: Minimum acceptable weight
+;  arg4: Maximum acceptable weight
+;  arg5: Style bits that must be set
+;  arg6: Style bits that must be reset
+; Returns:
+;  Pointer, or NULL if error
+	ld	iy,0
+	add	iy,sp
+	ld	hl,(iy + arg0)
+	push	iy
+	call	util.GetFontPackData
+	pop	iy
+	ret	c
+	ld	(iy + arg0),de
+; Fall through to fontlib_GetFontRaw
+assert $ = fontlib_GetFontByStyleRaw
+
+
+;-------------------------------------------------------------------------------
+fontlib_GetFontByStyleRaw:
+; Searches for a font in a font pack given a set of properties.
+; Arguments:
+;  arg0: Pointer to first data byte of font pack
+;  arg1: Minimum acceptable size
+;  arg2: Maximum acceptable size
+;  arg3: Minimum acceptable weight
+;  arg4: Maximum acceptable weight
+;  arg5: Style bits that must be set
+;  arg6: Style bits that must be reset
+; Returns:
+;  Pointer, or NULL if error
+	ld	iy,0
+	add	iy,sp
+	push	ix
+; Cache pointer to font pack start
+	ld	de,(iy + arg0)
+	or	a,a
+	sbc	hl,hl
+	add	hl,de
+; Get pointer to fonts table
+	ld	bc,strucFontPackHeader.fontCount
+	add	hl,bc
+	ld	b,(hl)
+	inc	hl
+.checkLoop:
+	ld	ix,(hl)
+	add	ix,de
+	call	.checkStyle
+	jr	c,.goodFont
+	inc	hl
+	inc	hl
+	inc	hl
+	djnz	.checkLoop
+	sbc	hl,hl		; Carry must be reset from above
+	jr	.badFont
+.goodFont:
+	lea	hl,ix + 0
+.badFont:
+	pop	ix
+	ret
+.checkStyle:
+	ld	a,(ix + strucFont.height)
+	cp	(iy + arg1)
+	ccf
+	ret	nc
+	cp	(iy + arg2)
+	jr	z,.sizeOK
+	ret	nc
+.sizeOK:
+	ld	a,(ix + strucFont.weight)
+	cp	(iy + arg3)
+	ccf
+	ret	nc
+	cp	(iy + arg4)
+	jr	z,.weightOK
+	ret	nc
+.weightOK:
+; TODO: I think the CP here might sometimes SET carry when it shouldn't be?
+	ld	a,(ix + strucFont.style)
+	ld	c,(iy + arg5)
+	and	a,c
+	cp	a,c
+	ret	nz
+	ld	a,(ix + strucFont.style)
+	ld	c,(iy + arg6)
+	and	a,c
+	xor	a,c
+	cp	a,c
+	ret	nz
+	scf
+	ret
+
+
+;-------------------------------------------------------------------------------
 ; Data
+_FontPackHeaderString:
+	db	"FONTPACK"
 _TextDefaultWindow:
 textDefaultWindow := _TextDefaultWindow - DataBaseAddr
 	dl	0
@@ -1525,7 +2091,7 @@ firstPrintableCodePoint := _TextFirstPrintableCodePoint - DataBaseAddr
 	db	chFirstPrintingCode
 _TextNewLineCode:
 newLineCode := _TextNewLineCode - DataBaseAddr
-	db	chNewLine
+	db	chNewline
 tempRandom:
 readCharacter := tempRandom - DataBaseAddr
 	db	0

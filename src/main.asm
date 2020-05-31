@@ -20,8 +20,11 @@
 ;-------------------------------------------------------------
 ; v1 functions
 ;-------------------------------------------------------------
+	export textio_SetPrintFormat
+	export textio_GetPrintFormat
 	export textio_SetTabWidth
 	export textio_GetTabWidth
+	export textio_PrintTab
 	export textio_GetLineWidth
 
 
@@ -32,6 +35,7 @@
 	arg1	:= 6
 	null	:= $00
 	tab		:= $09
+	space	:= $20
 
 
 
@@ -42,21 +46,69 @@
 
 
 ;-------------------------------------------------------------
+textio_SetPrintFormat:
+; Arguments:
+;   arg0 = format code
+; Returns:
+;   False if invalid format code passed; true otherwise
+; Destroys:
+;   A
+;   DE
+;   HL
+
+	pop		de
+	pop		hl
+	push	hl
+	push	de
+	ld		a, $02	; See table of valid format codes
+	sub		a, l
+	jr		c, .invalidValue
+	ld		(_PrintFormat), hl
+	ld		a, $01
+	ret
+
+.invalidValue:
+	xor		a, a
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetPrintFormat:
+; Arguments:
+;   None
+; Returns:
+;   Current print format code
+; Destroys:
+;   None
+
+	ld		a, (_PrintFormat)
+	ret
+	
+
+;-------------------------------------------------------------
 textio_SetTabWidth:
 ; Arguments:
 ;   arg0 = width
 ; Returns:
-;   None
+;   Zero if invalid width passed; true otherwise
 ; Destroys:
 ;   HL
 ;   DE
 
-	pop		hl
 	pop		de
-	push	de
+	pop		hl
 	push	hl
-	ld		(_TabWidth), de
+	push	de
+	xor		a, a
+	cp		a, l
+	jr		z, .invalidValue
+	ld		(_TabWidth), hl
+	inc		a
 	ret
+	
+.invalidValue:
+	ret
+
 
 ;-------------------------------------------------------------
 textio_GetTabWidth:
@@ -65,9 +117,34 @@ textio_GetTabWidth:
 ; Returns:
 ;   Width of tab
 
-	ld	hl, (_TabWidth)
+	ld	a, (_TabWidth)
 	ret
+
+
+;-------------------------------------------------------------
+textio_PrintTab:
+; Arguments:
+;   None
+; Returns:
+;   None
+; Destroys:
+;   BC
+;   HL
+
+	call	textio_GetTabWidth
+	ld		b, a
+	ld		hl, space
 	
+.loop:
+	push	bc
+	push	hl
+	call	fontlib_DrawGlyph
+	pop		hl
+	pop		bc
+	djnz	.loop
+	
+	ret
+
 
 ;-------------------------------------------------------------
 textio_GetLineWidth:
@@ -76,43 +153,48 @@ textio_GetLineWidth:
 ;   arg1  =  pointer to end of line
 ; Returns:
 ;   Width of line
+; Destroys:
+;   All working registers and iy
 
 	scf				; dbg_Debugger()
 	sbc hl,hl
 	ld (hl),2
+	
+	scf
+	ccf
+	sbc		hl, hl
+	ex		hl, de
 	
 	ld		iy, 0
 	add		iy, sp
 	ld		hl, (iy + arg0)	; hl -> line
 	ld		bc, (iy + arg1) ; bc -> eol
 
-	ld		e, 0
-	ld		d, 0
-
 .loop:
+	push	hl
+	sbc		hl, bc
+	pop		hl
+	jr		z, .exit
+	
 	ld		a, (hl)
 	cp		a, null
 	jr		z, .exit
-
-	push	hl
-	sbc		hl, bc
-	jr		z, .exit
-
-	pop		hl
-	ld		a, (hl)
+	
 	cp		a, tab
 	jr		nz, .addGlyphWidth
 
-	push	hl
-	call	textio_GetTabWidth
-	call	util.AddHLToDE
-	pop		hl
+	call	textio_GetTabWidth	; Add tab width
+	call	util.AddAToDE
 	jr		.nextChar
 
 .addGlyphWidth:
 	push	de
 	push	hl
-	call	fontlib_GetGlyphWidth
+	ld		d, 0
+	ld		e, (hl)
+	push	de
+	call	fontlib_GetGlyphWidth	; Destroys DE and HL
+	pop		hl
 	pop		hl
 	pop		de
 	call	util.AddAToDE
@@ -122,7 +204,7 @@ textio_GetLineWidth:
 	jr		.loop
 
 .exit:
-	ex		de, hl
+	ex		hl, de
 	ret
 
 
@@ -140,10 +222,10 @@ util.AddAToDE:
 ; Ouputs:
 ;   DE = DE + A
 
-	add	a, e
-	ld	e, a
-	jr	nc, .exit
-	inc	d
+	add		a, e
+	ld		e, a
+	jr		nc, .exit
+	inc		d
 .exit:
 	ret
 
@@ -169,6 +251,6 @@ util.AddHLToDE:
 ;-------------------------------------------------------------
 
 _TabWidth:
-	dl	4
+	db	4
 _PrintFormat:
 	db	0
