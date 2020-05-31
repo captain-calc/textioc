@@ -67,3 +67,13 @@ New Internal Library Routines:
 Comments:
 
 A complete port of the library from C to eZ80 Assembly. Drops GraphX font support and adds FontLibC support.
+
+*textioc.h* contains the syntax for the following functions:
+
+Ported Functions:
+* textio_SetPrintFormat
+* textio_GetPrintFormat
+* textio_SetTabWidth
+* textio_GetTabWidth
+* textio_PrintTab
+* textio_GetLineWidth
