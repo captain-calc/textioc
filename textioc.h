@@ -13,6 +13,7 @@ bool textio_SetTabWidth(uint8_t width);
 uint8_t textio_GetTabWidth(void);
 void textio_PrintTab(void);
 uint24_t textio_GetLineWidth(const char *line, const char *eol);
+char *textio_GetLinePtr(const char *text, uint8_t line_num);
 
 
 #ifdef __cplusplus
