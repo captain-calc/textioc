@@ -5,9 +5,11 @@
 	include 'include/include_library.inc'
 
 
+
 ;-------------------------------------------------------------
 	library 'TEXTIOC', 1
 ;-------------------------------------------------------------
+
 
 
 ;-------------------------------------------------------------
@@ -15,6 +17,7 @@
 ;-------------------------------------------------------------
 	include_library 'graphx.asm'
 	include_library 'fontlibc.asm'
+
 
 
 ;-------------------------------------------------------------
@@ -26,6 +29,8 @@
 	export textio_GetTabWidth
 	export textio_PrintTab
 	export textio_GetLineWidth
+	export textio_GetLinePtr
+
 
 
 ;-------------------------------------------------------------
@@ -33,10 +38,24 @@
 ;-------------------------------------------------------------
 	arg0	:= 3
 	arg1	:= 6
+	local0	:= -3
 	null	:= $00
-	tab		:= $09
+	tab	:= $09
 	space	:= $20
+	bPrintLeftMarginFlush	:= 1
+	mPrintLeftMarginFlush	:= 1 shl bPrintLeftMarginFlush
+	bPrintCentered	:= 2
+	mPrintCentered	:= 1 shl bPrintCentered
+	bPrintRightMarginFlush	:= 3
+	mPrintRightMarginFlush	:= 1 shl bPrintRightMarginFlush
 
+
+
+macro mOpenDebugger
+	scf
+	sbc	hl,hl
+	ld	(hl),2
+end macro
 
 
 
@@ -44,8 +63,6 @@
 ; Functions
 ;-------------------------------------------------------------
 
-
-;-------------------------------------------------------------
 textio_SetPrintFormat:
 ; Arguments:
 ;   arg0 = format code
@@ -56,19 +73,18 @@ textio_SetPrintFormat:
 ;   DE
 ;   HL
 
-	pop		de
-	pop		hl
-	push	hl
-	push	de
-	ld		a, $02	; See table of valid format codes
-	sub		a, l
-	jr		c, .invalidValue
-	ld		(_PrintFormat), hl
-	ld		a, $01
+	ld	hl, arg0
+	add	hl, sp
+	ld	a, bPrintRightMarginFlush	; See table of valid format codes
+	sub	a, (hl)
+	jr	c, .invalidValue	; This cannot be set to zero; fix
+	ld	a, (hl)
+	ld	(_PrintFormat), a
+	ld	a, 1
 	ret
 
 .invalidValue:
-	xor		a, a
+	xor	a, a
 	ret
 
 
@@ -81,7 +97,7 @@ textio_GetPrintFormat:
 ; Destroys:
 ;   None
 
-	ld		a, (_PrintFormat)
+	ld	a, (_PrintFormat)
 	ret
 	
 
@@ -95,15 +111,14 @@ textio_SetTabWidth:
 ;   HL
 ;   DE
 
-	pop		de
-	pop		hl
-	push	hl
-	push	de
-	xor		a, a
-	cp		a, l
-	jr		z, .invalidValue
-	ld		(_TabWidth), hl
-	inc		a
+	ld	hl, arg0
+	add	hl, sp
+	xor	a, a
+	cp	a, (hl)
+	jr	z, .invalidValue
+	ld	a, (hl)
+	ld	(_TabWidth), a
+	inc	a
 	ret
 	
 .invalidValue:
@@ -132,15 +147,15 @@ textio_PrintTab:
 ;   HL
 
 	call	textio_GetTabWidth
-	ld		b, a
-	ld		hl, space
+	ld	b, a
+	ld	hl, space
 	
 .loop:
 	push	bc
 	push	hl
 	call	fontlib_DrawGlyph
-	pop		hl
-	pop		bc
+	pop	hl
+	pop	bc
 	djnz	.loop
 	
 	ret
@@ -155,57 +170,227 @@ textio_GetLineWidth:
 ;   Width of line
 ; Destroys:
 ;   All working registers and iy
-
-	scf				; dbg_Debugger()
-	sbc hl,hl
-	ld (hl),2
 	
-	scf
-	ccf
-	sbc		hl, hl
-	ex		hl, de
+	or	a, a
+	sbc	hl, hl
+	ex	hl, de
 	
-	ld		iy, 0
-	add		iy, sp
-	ld		hl, (iy + arg0)	; hl -> line
-	ld		bc, (iy + arg1) ; bc -> eol
+	ld	iy, 0
+	add	iy, sp
+	ld	hl, (iy + arg0)	; hl -> line
+	ld	bc, (iy + arg1) ; bc -> eol
 
 .loop:
 	push	hl
-	sbc		hl, bc
-	pop		hl
-	jr		z, .exit
+	sbc	hl, bc
+	pop	hl
+	jr	z, .exit
 	
-	ld		a, (hl)
-	cp		a, null
-	jr		z, .exit
+	ld	a, (hl)
+	cp	a, null
+	jr	z, .exit
 	
-	cp		a, tab
-	jr		nz, .addGlyphWidth
+	cp	a, tab
+	jr	nz, .addGlyphWidth
 
 	call	textio_GetTabWidth	; Add tab width
 	call	util.AddAToDE
-	jr		.nextChar
+	jr	.nextChar
 
 .addGlyphWidth:
 	push	de
 	push	hl
-	ld		d, 0
-	ld		e, (hl)
+	ld	d, 0
+	ld	e, (hl)
 	push	de
 	call	fontlib_GetGlyphWidth	; Destroys DE and HL
-	pop		hl
-	pop		hl
-	pop		de
+	pop	hl
+	pop	hl
+	pop	de
 	call	util.AddAToDE
 
 .nextChar:
-	inc		hl		; HL should be pointer to line
-	jr		.loop
+	inc	hl		; HL should be pointer to line
+	jr	.loop
 
 .exit:
-	ex		hl, de
+	ex	hl, de
 	ret
+
+
+;-------------------------------------------------------------
+textio_GetLinePtr:
+; Arguments:
+;   arg0  =  pointer to line
+;   arg1  =  line number
+; Returns:
+;   Pointer to line
+; Destroys:
+;   A
+;   BC
+;   DE
+;   HL
+;   IY
+
+; The desired line number will be on the stack
+; as will the current line number
+; DE = current line width
+; HL -> current word pointer
+; BC -> current line pointer
+
+; Set the first printable code point and alternate stop code to 0x20 (space)
+	
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+	sbc	hl, hl
+	
+	ld	l, space
+	push	hl
+	call	fontlib_SetFirstPrintableCodePoint
+	call	fontlib_SetAlternateStopCode
+	pop	hl
+
+; The current line number is zero at the start
+.currLineNum := $ - 1
+	ld	a, 0
+	ld	(.currLineNum), a
+
+	ld	iy, 0
+	add	iy, sp
+	ld	hl, (iy + arg0)	; HL -> line
+	ld	bc, (iy + arg0) ; BC -> line
+
+; Return NULL if NULL string passed
+	ld	a, null
+	cp	a, (hl)
+	jr	nz, .loop
+	or	a, a
+	sbc	hl, hl
+	ret
+
+.loop:
+	push	hl
+	mOpenDebugger
+	pop	hl
+; If the current line number is less than the desired line number, jump to cont1
+; Else return the current line pointer
+	ld	a, (.currLineNum)
+	sub	a, (iy + arg1)
+	jr	nz, .cont1
+	or	a, a
+	sbc	hl, hl
+	add	hl, bc
+	ret
+.cont1:
+; Add width of next word
+	push	bc
+	push	de
+	push	hl
+	call	fontlib_GetStringWidth	; Destroys BC, DE, and HL
+	pop	bc
+	pop	de
+	add	hl, de
+	ex	de, hl
+	push	bc
+	pop	hl
+	pop	bc
+
+; Add width of space following word
+	push	hl
+	call	fontlib_GetLastCharacterRead
+	ld	a, space
+	cp	a, (hl)
+	pop	hl
+	jr	nz, .doNotAddSpaceWidth
+	push	hl
+	push	de
+	or	a, a
+	sbc	hl, hl
+	ld	l, space
+	push	hl
+	call	fontlib_GetGlyphWidth	; Destroys DE and HL
+	pop	hl
+	pop	de
+	pop	hl
+	call	util.AddAToDE
+.doNotAddSpaceWidth:
+; If next word is a tab, add tab width
+	push	hl
+	call	fontlib_GetLastCharacterRead
+	ld	a, tab
+	cp	a, (hl)
+	pop	hl
+	jr	nz, .doNotAddTabWidth
+	call	textio_GetTabWidth
+	call	util.AddAToDE
+.doNotAddTabWidth:
+; If the current line width is less than the window width, jump to cont2
+; If not, start a new line
+	push	hl
+	push	bc
+	call	fontlib_GetWindowWidth	; Destroys BC
+	push	de
+	or	a, a
+	sbc	hl, de
+	pop	de
+	pop	bc
+	pop	hl
+	jr	nc, .cont2
+; Increment the current line number
+	ld	a, (.currLineNum)
+	inc	a
+	ld	(.currLineNum), a
+; Set line width to zero
+	push	hl
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+	pop	hl
+; If printing right margin flush, subtract one from the current word pointer (HL)
+; so that the space after the last word on a line is printed at the start of the
+; next line
+	ld	a, (_PrintFormat)
+	cp	a, bPrintRightMarginFlush
+	jr	nz, .doNotDecPointer
+	dec	hl
+.doNotDecPointer:
+; Set current line pointer to current word pointer
+	push	hl
+	pop	bc
+; Jump back to the start so that the curr_word is not incremented
+	jp	.loop
+.cont2:
+; If the next word is not a newline code, jump to cont3
+	push	hl
+	call	fontlib_GetNewlineCode
+	call	fontlib_GetLastCharacterRead
+	cp	a, (hl)
+	pop	hl
+	jr	nz, .cont3
+; Else, start new line
+; Increment the current line number
+	ld	a, (.currLineNum)
+	inc	a
+	ld	(.currLineNum), a
+; Set line width to zero
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+; Set the current line pointer to the char after the newline code
+	call	fontlib_GetLastCharacterRead
+	push	hl
+	pop	bc
+.cont3:
+; Increment the current word pointer to the word after the last char read
+; HL still contains the pointer returned by the last fontlib call
+; If (HL) is NULL, return the address of the null encountered
+	inc	hl
+	ld	a, null
+	cp	a, (hl)
+	jp	nz, .loop
+	ret
+
 
 
 
@@ -213,8 +398,6 @@ textio_GetLineWidth:
 ; Internal Library Functions
 ;-------------------------------------------------------------
 
-
-;-------------------------------------------------------------
 util.AddAToDE:
 ; Inputs:
 ;   A  = Operand 1
@@ -222,12 +405,29 @@ util.AddAToDE:
 ; Ouputs:
 ;   DE = DE + A
 
-	add		a, e
-	ld		e, a
-	jr		nc, .exit
-	inc		d
+	add	a, e
+	ld	e, a
+	jr	nc, .exit
+	inc	d
 .exit:
 	ret
+
+
+;--------------------------------------------------------------
+util.CompareLastCharRead:
+; Preserves HL
+; Arguments:
+;   A = character to compare
+; Returns:
+;   NZ if no match
+;   Z  if match
+
+	push	hl
+	call	fontlib_GetLastCharacterRead
+	cp	a, (hl)
+	pop	hl
+	ret
+
 
 ;-------------------------------------------------------------
 util.AddHLToDE:
@@ -238,11 +438,10 @@ util.AddHLToDE:
 ;   DE = HL + DE
 
 	push	hl
-	add		hl, de
-	ex		hl, de
-	pop		hl
+	add	hl, de
+	ex	hl, de
+	pop	hl
 	ret
-
 
 
 
@@ -253,4 +452,4 @@ util.AddHLToDE:
 _TabWidth:
 	db	4
 _PrintFormat:
-	db	0
+	db	1

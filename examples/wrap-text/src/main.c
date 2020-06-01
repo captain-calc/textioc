@@ -31,6 +31,8 @@ void main(void) {
 	
     char text[] = {"This is a very long sample string for wrapping around 320 pixels. This is yet another sample string made for text wrapping testing."};
 
+	char *next_line;
+
     gfx_Begin();
     if (!fontlib_SetFont(test_font, 0))
 		dbg_sprintf(dbgout, "Font failed to load");
@@ -46,10 +48,11 @@ void main(void) {
 	dbg_sprintf(dbgout, "Attempting to set tab to 4 | textio_SetTabWidth = %d | tab = %d\n", textio_SetTabWidth(4), textio_GetTabWidth());
 	dbg_sprintf(dbgout, "Attempting to set format to 0 | textio_SetPrintFormat = %d | format = %d\n", textio_SetPrintFormat(0), textio_GetPrintFormat());
 	dbg_sprintf(dbgout, "Attempting to set format to 3 | textio_SetPrintFormat = %d | format = %d\n", textio_SetPrintFormat(3), textio_GetPrintFormat());
-	textio_SetTabWidth(10);
-	textio_PrintTab();
 	dbg_sprintf(dbgout, "textio_width = %d | fontlib_width = %d\n", textio_GetLineWidth(text, text + 10), fontlib_GetStringWidthL(text, 10));
-    while (!os_GetCSC());
+	textio_SetPrintFormat(1);
+	next_line = textio_GetLinePtr(text, 1);
+	dbg_sprintf(dbgout, "next line = 0x%6x | next line = %c\n", next_line, *next_line);
+	while (!os_GetCSC());
 	
     gfx_End();
 }
