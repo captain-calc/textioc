@@ -52,6 +52,7 @@ void main(void) {
 	textio_SetPrintFormat(1);
 	next_line = textio_GetLinePtr(text, 1);
 	dbg_sprintf(dbgout, "next line = 0x%6x | next line = %c\n", next_line, *next_line);
+	textio_PrintText(text, 5);
 	while (!os_GetCSC());
 	
     gfx_End();
