@@ -70,10 +70,13 @@ A complete port of the library from C to eZ80 Assembly. Drops GraphX font suppor
 
 *textioc.h* contains the syntax for the following functions:
 
-Ported Functions:
 * textio_SetPrintFormat
 * textio_GetPrintFormat
 * textio_SetTabWidth
 * textio_GetTabWidth
 * textio_PrintTab
+* textio_PrintChar
+* textio_GetCharWidth
 * textio_GetLineWidth
+* textio_PrintText
+* textio_GetLinePtr
