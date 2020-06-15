@@ -13,10 +13,10 @@ with *FontLibC*.
 
 After you have downloaded the repository, put the folder in
 the *CEdev* directory. To build the library, run *build.bat*.
-In order to create programs using the library, he *textioc.h*
-file should go in the *include* folder under *CEdev*. This
-will generate an *.8xv* file and a *.lib* file. The *TEXTIOC.lib*
-should go into the *CEdev/lib/libload* directory.
+This script will generate a *.8xv* file and a *.lib* file.
+In order to create programs using the library, the *textioc.h*
+file should go in the *include* folder under *CEdev*. The
+*TEXTIOC.lib* should go into the *CEdev/lib/libload* directory.
 
 **IMPORTANT:** Until further notice, this library is *not* part of
 the official CE SDK and is currently incomplete. If you wish to
