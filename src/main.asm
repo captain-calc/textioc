@@ -25,8 +25,8 @@
 ;-------------------------------------------------------------
 	export textio_SetPrintFormat
 	export textio_GetPrintFormat
-	export textio_SetTabWidth
-	export textio_GetTabWidth
+	export textio_SetTabSize
+	export textio_GetTabSize
 	export textio_PrintTab
 	export textio_PrintChar
 	export textio_GetCharWidth
@@ -124,7 +124,7 @@ textio_GetPrintFormat:
 	
 
 ;-------------------------------------------------------------
-textio_SetTabWidth:
+textio_SetTabSize:
 ; Arguments:
 ;   arg0 = width
 ; Returns:
@@ -147,38 +147,15 @@ textio_SetTabWidth:
 
 
 ;-------------------------------------------------------------
-textio_GetTabWidth:
+textio_GetTabSize:
 ; Arguments:
 ;   None
 ; Returns:
 ;   Width of tab
+; Destroys:
+;   All working registers
 
 	ld	a, (_TabWidth)
-	ret
-
-
-;-------------------------------------------------------------
-textio_PrintTab:
-; Arguments:
-;   None
-; Returns:
-;   None
-; Destroys:
-;   BC
-;   HL
-
-	call	textio_GetTabWidth
-	ld	b, a
-	ld	hl, space
-	
-.loop:
-	push	bc
-	push	hl
-	call	fontlib_DrawGlyph
-	pop	hl
-	pop	bc
-	djnz	.loop
-	
 	ret
 
 
@@ -201,7 +178,29 @@ textio_PrintChar:
 	pop	hl
 	ret
 .printTab:
-	call	textio_PrintTab
+	jr	textio_PrintTab
+
+
+;-------------------------------------------------------------
+textio_PrintTab:
+; Arguments:
+;   None
+; Returns:
+;   None
+; Destroys:
+;   BC and HL
+
+	call	textio_GetTabSize
+	ld	b, a
+	ld	hl, space
+	
+.loop:
+	push	bc
+	push	hl
+	call	fontlib_DrawGlyph
+	pop	hl
+	pop	bc
+	djnz	.loop
 	ret
 
 
@@ -228,8 +227,20 @@ textio_GetCharWidth:
 	pop	hl
 	ret
 .getTabWidth:
-	call	textio_GetTabWidth
-	ret
+	or	a, a
+	sbc	hl, hl
+	push	hl
+	ld	l, $20
+	push	hl
+	call	fontlib_GetGlyphWidth
+	pop	hl
+	pop	hl
+	ld	l, a
+	call	textio_GetTabSize
+	ld	h, a
+	mlt	hl
+	ld	a, l ; This only returns L, so any tab_width * space_width that
+	ret	; is greater than 255 will not behave as expected
 
 
 ;-------------------------------------------------------------
@@ -257,6 +268,10 @@ textio_GetLineWidth:
 	or	a, a
 	sbc	hl, bc
 	pop	hl
+	jr	z, .exit
+	
+	call	fontlib_GetNewlineCode
+	cp	a, (hl)
 	jr	z, .exit
 	
 	ld	a, (hl)
@@ -310,13 +325,17 @@ textio_PrintText:
 	ld	hl, arg0
 	add	hl, sp
 	ld	hl, (hl)
+; Set the desired yPos
 	push	hl
-	ld	hl, arg1
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+	ld	hl, 9
 	add	hl, sp
 	ld	de, (hl)
 	call	fontlib_GetWindowXMin
-	push	hl
 	push	de
+	push	hl
 	call	fontlib_SetCursorPosition
 	pop	hl
 	pop	hl
@@ -460,232 +479,188 @@ textio_PrintText:
 	call	fontlib_Newline
 	pop	hl
 	jp	.outerLoop
-
-
+	
+	
 ;-------------------------------------------------------------
 textio_GetLinePtr:
 ; Arguments:
-;   arg0 = pointer to string
-;   arg1 = line number
+;   arg0 = text
+;   arg1 = yPos
 ; Returns:
-;   Pointer to next line if successful
-;   Returns NULL if an error occured
+;   Pointer to next line; NULL if error
 ; Destroys:
-;   All registers and iy
+;   
 
-; BC = current line pointer
-; HL = current char pointer
-
-; Set line width to zero
+	; Set line width to zero
 	or	a, a
 	sbc	hl, hl
 	ld	(_LineWidth), hl
-; Set first printable character and alternate stop code to 0x20 (space)
+
+	; Set first printable character and alternate stop code to 0x20 (space)
 	ld	l, space
 	push	hl
 	call	fontlib_SetFirstPrintableCodePoint
 	call	fontlib_SetAlternateStopCode
 	pop	hl
-; Set the current line number to zero
+
+	; Set the current line number to zero
 	ld	a, 0
 	ld	(_CurrLineNum), a
-; Load the desired line number into _LineNum
+	; Load the desired line number into _LineNum
 	ld	hl, arg1
 	add	hl, sp
 	ld	a, (hl)
 	ld	(_LineNum), a
-; Load the current char pointer and the current line pointer
+
+	; Load the current char pointer and the current line pointer
 	ld	iy, 0
 	add	iy, sp
 	ld	hl, (iy + arg0)
 	ld	bc, (iy + arg0)
+	push	bc
 
-.loop:
-; If current line number == desired line number, return line pointer
+.outerLoop:
+	; If current line number == desired line number, return line pointer
+	pop	bc
 	push	hl
 	ld	hl, _CurrLineNum
 	ld	a, (_LineNum)
 	cp	a, (hl)
 	pop	hl
 	ret	z
-; If current char pointer == null, return line pointer
+
+	; If current char pointer == null, return line pointer
 	ld	a, null
 	cp	a, (hl)
 	ret	z
-; If current char pointer == newline, call util.startNewLine, increment current
-; char pointer, and jump to loop
+
+	push	bc	; Save pointer to start or line
+	call	util.GetApproximateLinePtr
+	pop	de
+	push	de
+	cp	a, null
+	jr	z, .testForPrintFormat	; This is necessary since DE must be on the stack
+	push	hl
+	pop	bc	; BC = approximated pointer
+.innerLoop:
 	call	fontlib_GetNewlineCode
 	cp	a, (hl)
-	jr	nz, .testForSpace
-	call	util.startNewLine	; Preserves HL | Destroys A
-	inc	hl
-	jr	.loop
-.testForSpace:
+	jr	z, .testForPrintFormat
+
 	push	hl
 	or	a, a
-	sbc	hl, hl
-	ex	de, hl
+	sbc	hl, de
 	pop	hl
-	ld	a, 0
-	push	af
-
-	ld	a, space
-	cp	a, (hl)
-	jr	z, .getCharWidth
-.testForTab:
-	ld	a, tab
-	cp	a, (hl)
-	jr	z, .getCharWidth
-.testForInvalidChar:
+	jr	z, .breakString
+	
+	dec	hl
 	ld	a, $20
 	cp	a, (hl)
-	jr	c, .getWordWidth
-	pop	af
-	or	a, a
-	sbc	hl, hl
-	ret
-.getCharWidth:
-	push	hl
-	or	a, a
-	ld	a, (hl)
-	sbc	hl, hl
-	ex	de, hl
-	ld	e, a
-	push	de
-	call	textio_GetCharWidth
-	pop	de
-	ld	e, a
-	pop	hl
-; If printing RMF, append the next word to the tab or space
-	ld	a, (_PrintFormat)
-	cp	a, bPrintRightMarginFlush
-	jr	nz, .addStringToLine
-.getWordWidth:
-	push	de
-	push	hl
-	inc	hl	; So that the function doesn't immediately terminate on a tab or space
-	push	hl
-	call	fontlib_GetStringWidth
-	pop	bc
-	pop	bc	; BC = pointer value of HL
-	pop	de
-	add	hl, de
-	ex	de, hl
-	push	bc
-	pop	hl
-; Pop AF to replace the char code (0) with the word code (1)
-	pop	af
-	ld	a, 1
-	push	af
-.addStringToLine:
-	pop	af
-	push	bc
-	call	util.addStringToLine
-	pop	bc
-	jr	.loop
-	
-	
-;-------------------------------------------------------------
-util.addStringToLine:
-; Arguments:
-;   HL = pointer to string
-;   DE = width of the string
-;   A  = 0 if adding char; A = 1 if adding string
-; Returns:
-;   A  = 0    if string fit without new line
-;   A  = 1    if new line started
-;   HL = NULL if first char is wider than the text window
-; Destroys:
-;   A, BC, DE, and HL
+	jr	c, .innerLoop
+;	push	de
+;	push	hl	; If after the first DEC HL, (HL) is a space, this will force
+;	ex	de, hl
+;	push	bc
+;	pop	hl
+;	xor	a, a	; the algorithm to continue decrementing until the start of the
+;	sbc	hl, de	; word before the space.
+;	ld	a, l
+;	cp	a, 1
+;	pop	hl
+;	pop	de
+;	jr	z, .innerLoop
+	jr	.testForPrintFormat
 
-; Add line width to DE and compare with window width
-	push	af
-	
-	push	hl
-	push	de
-	ld	de, (_LineWidth)
-	pop	hl
-	add	hl, de
-	ex	de, hl
-	pop	hl
-	
-	push	hl
-	call	fontlib_GetWindowWidth
-	or	a, a
-	sbc	hl, de
-	pop	hl
-	jr	c, .stringDoesNotFit
-
-	pop	af
-	cp	a, 1
-	jr	z, .addWord
-	inc	hl
-	ld	(_LineWidth), de
-	ld	a, 0
-	ret
-.addWord:
-	inc	hl
-	ld	a, $20
-	cp	a, (hl)
-	jr	c, .addWord
-	ld	(_LineWidth), de
-	ld	a, 0
-	ret
-.stringDoesNotFit:
-	; Get the first char width and compare
-	; it with the window width
-	; If the first char's width is greater than the text window
-	; width, return NULL
-	push	de	; DE still holds the string width
+.breakString:
 	push	hl
 	or	a, a
 	sbc	hl, hl
-	ex	de, hl
+	ld	(_LineWidth), hl
 	pop	hl
-	ld	e, (hl)
-	push	hl
-	push	de
-	call	fontlib_GetGlyphWidth
-	pop	de
-	ld	e, a
-	call	fontlib_GetWindowWidth
-	or	a, a
-	sbc	hl, de
-	pop	hl
-	pop	de
-	jr	nc, .charFits
-	pop	af
-	sbc	hl, hl
-	ret
-.charFits:
-	; If it is a space or a tab, start a new line and return
-	pop	af
-	cp	a, 0
-	jr	nz, .handleWord
-	call	util.startNewLine
-	ld	a, 1
-	ret
-.handleWord:
-	; If word width > window width, call breakString, start a new line,
-	; and return. Else, just start new line
-	push	hl
-	ex	de, hl
-	ld	de, (_LineWidth)
-	or	a, a
-	sbc	hl, de
-	ex	de, hl
-	push	de
-	call	fontlib_GetWindowWidth
-	pop	de
-	or	a, a
-	sbc	hl, de
-	pop	hl
-	jr	nc, .startNewLine
 	call	util.breakString
+.testForPrintFormat:
+	ld	a, (_PrintFormat)
+	cp	a, bPrintLeftMarginFlush
+	jr	z, .incHL
+	cp	a, bPrintCentered
+	jr	z, .incHL
+	call	fontlib_GetNewlineCode
+	cp	a, (hl)
+	jr	z, .incHL
+	jr	.startNewLine
+.incHL:
+	; Do not increment HL if it points to a NULL
+	pop	bc
+	ld	a, null
+	cp	a, (hl)
+	ret	z
+	push	bc
+	inc	hl
 .startNewLine:
-	call	util.startNewLine
-	ld	a, 1
-	ret
+	pop	bc
+	; If the newline is at the start of a line and we are printing RMF, increment HL so that the next
+	; line will be (address of newline) + 1.
+	call	util.startNewLine	; This expects BC to be the line pointer
+	push	bc
+	jr	.outerLoop
+
+
+;-------------------------------------------------------------
+util.GetApproximateLinePtr:
+; Arguments:
+;   HL = pointer to start of line
+; Returns:
+;   HL = approximated pointer to next line
+;   A = 0 if function found a NULL
+; Destroys:
+;   All working registers
+
+	; Save pointer to start of line
+	push	hl
+.loop:
+	pop	de
+	push	hl
+	push	de
+	call	textio_GetLineWidth
+	ex	de, hl
+	pop	bc	; BC = pointer to start of line
+	pop	hl	; HL = pointer to current character
+	push	bc
+	push	hl
+	call	fontlib_GetWindowWidth
+	or	a, a
+	sbc	hl, de
+	pop	hl	; HL = pointer to current character
+	pop	de	; DE = pointer to start of line
+	ret	c
+
+	call	fontlib_GetNewlineCode
+	cp	a, (hl)
+	ret	z
+
+	ld	a, null
+	cp	a, (hl)
+	ret	z
+
+	call	util.ZeroBC
+	ld	c, (hl)
+	push	de
+	push	hl
+	push	bc
+	call	textio_GetCharWidth
+	pop	bc
+	push	af
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+	pop	af
+	ld	hl, (_LineWidth)
+	ld	e, a
+	add	hl, de
+	ld	(_LineWidth), hl
+	pop	hl
+	inc	hl
+	jr	.loop
 
 
 ;-------------------------------------------------------------
@@ -719,7 +694,16 @@ util.breakString:
 	ld	a, tab
 	cp	a, (hl)
 	jr	nz, .getGlyphWidth
-	call	textio_GetTabWidth
+	push	de
+	push	hl
+	or	a, a
+	sbc	hl, hl
+	ld	l, tab
+	push	hl
+	call	textio_GetCharWidth
+	pop	hl
+	pop	hl
+	pop	de
 	jr	.addToStrWidth
 .getGlyphWidth:
 	push	hl
@@ -765,15 +749,20 @@ util.startNewLine:
 ; Arguments:
 ;   HL = pointer to current character being processed in the line
 ; Returns:
-;   Adds one to textio_GetLinePtr.currLineNum
+;   Adds one to _CurrLineNum
 ;   Sets BC equal to HL
+;   Zeros the _LineWidth
 
 ; Increment the current line number
 	ld	a, (_CurrLineNum)
 	inc	a
 	ld	(_CurrLineNum), a
-; Reset the current line width and set the current line pointer
-; to the current char pointer
+; Set the current line pointer to the current char pointer
+	ex	de, hl
+	xor	a, a
+	sbc	hl, hl
+	ld	(_LineWidth), hl
+	ex	de, hl
 	push	hl
 	pop	bc
 	ret

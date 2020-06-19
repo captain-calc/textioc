@@ -62,7 +62,7 @@ New Internal Library Routines:
 * iscntrl	(determines if the passed char is a null, a newline, or a tab)
 
 
-### Version 0.4 (in progress...)
+### Version 0.4.0
 
 Comments:
 
@@ -72,11 +72,18 @@ A complete port of the library from C to eZ80 Assembly. Drops GraphX font suppor
 
 * textio_SetPrintFormat
 * textio_GetPrintFormat
-* textio_SetTabWidth
-* textio_GetTabWidth
+* textio_SetTabSize
+* textio_GetTabSize
 * textio_PrintTab
 * textio_PrintChar
 * textio_GetCharWidth
 * textio_GetLineWidth
 * textio_PrintText
 * textio_GetLinePtr
+
+
+### Version 0.4.1
+
+Comments:
+
+Library is stable, except in very extreme or unusual circumstances. Contains a complete rewrite of several functions pertaining to *textio_GetLinePtr*.
