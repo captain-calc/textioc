@@ -1,9 +1,8 @@
 /**
  * @file
- * @brief Contains text-wrapping and text input routines for FontLibC.
+ * @brief Contains text-wrapping and text input routines for GraphX and FontLibC.
  *
- * TextIOC is a wrapper for the FontLibC library created by DrDnar. It offers several useful
- * routines for text wrapping and various kinds of text input.
+ * TextIOC is a general-purpose text I/O library, supporting both GraphX and FontLibC.
  *
  * The library's text input is based on the Input Data Structure (IDS) which holds the input
  * data and configuration data for the two input routines, textio_Input and textio_TimedInput.
@@ -56,9 +55,20 @@
  * textio_DeleteKeymap(keymap);
  * @endcode
  *
+ * TextIOC uses a text window for displaying text output, like FontLibC. This window and its associated
+ * functions, such as textio_SetNewlineCode and textio_SetLineSpacing, are **completely** seperate from
+ * the FontLib text window. Thus, if the programmer is using FontLibC, he will need to setup the TextIOC
+ * text window as he would the FontLibC window. This also means that it is safe to use both a TextIOC text
+ * window and and FontLib text window on the same screen simultaneously.
+ *
+ * TextIOC offers a SetLineSpacing function that acts exactly like its FontLib counterpart. The FontLib
+ * function, fontlib_SetLineSpacing, does not affect the TextIOC text window. One FontLib function, however,
+ * does apply to the TextIOC window, fontlib_SetFirstPrintableCodePoint.
+ *
+ *
  * @authors "Captain Calc"
  *
- * Many thanks to jacobly, Adriweb, and the other members of the CE Programming team for their
+ * Many thanks to DrDnar, jacobly, Adriweb, and the other members of the CE Programming team for their
  * help and support!
  */
 
@@ -67,10 +77,100 @@
 #define H_TEXTIOC
 
 #include <stdint.h>
+#include <tice.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Codes for the two source libraries that TextIOC supports.
+*/
+typedef enum {
+	/**
+	 * Sets GraphX as the source library.
+	*/
+	TEXTIO_SET_GRAPHX_AS_SRC_LIB = 0x00,
+	
+	/**
+	 * Sets FontLibC as the source library.
+	*/
+	TEXTIO_SET_FONTLIBC_AS_SRC_LIB = 0x01
+} textio_source_library_codes_t;
+
+/**
+ * This structure holds the pointers to the source library's text functions.
+ *
+ * @see textio_SetLibraryRoutines
+*/
+typedef struct {
+	/**
+	 * Pointer to either gfx_SetTextXY or fontlib_SetCursorPosition
+	*/
+	void *set_cursor_position;
+	
+	/**
+	 * Pointer to either gfx_GetTextX or fontlib_GetCursorX
+	*/
+	void *get_cursor_x;
+	
+	/**
+	 * Pointer to either gfx_GetTextY or fontlib_GetCursorY
+	*/
+	void *get_cursor_y;
+	
+	/**
+	 * Pointer to gfx_PrintChar or fontlib_DrawGlyph
+	*/
+	void *draw_char;
+	
+	/**
+	 * Pointer to gfx_GetCharWidth or fontlib_GetGlyphWidth
+	*/
+	void *get_char_width;
+} textio_library_routines_t;
+
+/**
+ * Sets the library that will supply text functions to TextIOC.
+ *
+ * @param code Library code
+ * @see textio_source_library_codes_t
+*/
+void textio_SetSourceLibrary(uint8_t code);
+
+/**
+ * Provides the source library's text function pointers to TextIOC.
+ *
+ * @note The recommended method for using this function is shown below:
+ * @code
+ * textio_library_routines_t *ptr = malloc(sizeof(textio_library_routines_t));
+ *
+ * ptr->set_cursor_position = &gfx_SetTextXY;
+ * ptr->get_cursor_x = &gfx_GetTextX;
+ * ptr->get_cursor_y = &gfx_GetTextY;
+ * ptr->draw_char = &gfx_PrintChar;
+ * ptr->get_char_width = &gfx_GetCharWidth;
+ *
+ * // If you are using FontLibC, replace the above codeblock with this one:
+ * // ptr->set_cursor_position = &fontlib_SetCursorPosition;
+ * // ptr->get_cursor_x = &fontlib_GetCursorX;
+ * // ptr->get_cursor_y = &fontlib_GetCursorY;
+ * // ptr->draw_char = &fontlib_DrawGlyph;
+ * // ptr->get_char_width = &fontlib_GetGlyphWidth;
+ * 
+ * textio_SetLibraryRoutines(ptr);
+ * free(ptr);
+ *	
+ * textio_SetSourceLibrary(TEXTIO_SET_GRAPHX_AS_SRC_LIB);
+ *
+ * // For FontLibC, replace the above library code with the FontLibC code.
+ * @endcode
+ * @see textio_library_routines_t
+ * @see textio_source_library_codes_t
+ * 
+ * @param ptr Pointer to routine structure
+*/
+void textio_SetLibraryRoutines(textio_library_routines_t *ptr);
 
 /**
  * Allocates memory for a \c Input \c Data \c Structure \c (IDS).
@@ -221,6 +321,22 @@ void textio_SetCursorBlinkRate(uint8_t rate);
  * @return Current cursor x-position
 */
 uint24_t textio_GetCurrCursorX(void);
+
+/**
+ * Sets the cursor y-position for the specified IDS.
+ *
+ * @param IDS Pointer to IDS
+ * @param yPos Cursor y-position
+*/
+void textio_SetCursorY(uint24_t *IDS, uint8_t yPos);
+
+/**
+ * Gets the cursor y-position for the specified IDS.
+ *
+ * @param IDS Pointer to IDS
+ * @return Cursor y-position
+*/
+uint8_t textio_GetCursorY(uint24_t *IDS);
 
 /**
  * Sets the cursor width and height.
@@ -508,47 +624,41 @@ textio_SetPrgmNameFlag(ids, true); \
 }; } while (0)
 
 /**
- * Sets up the keypad data register and key for the key that activates textio_Input()'s
- * clear action.
+ * Sets the key that activates textio_Input()'s clear action. Defaults to [clear].
  *
  * @note This function is not IDS-specific. The action will remain linked to the given key for all IDSes
  * until it is changed by the programmer.
  *
- * @param kb_register Keypad data register
  * @param key Key
 */
 void textio_SetClearKey(sk_key_t key);
 
 /**
- * Sets up the keypad data register and key for the key that activates textio_Input()'s
- * backspace action.
+ * Sets the key that activates textio_Input()'s backspace action. Defaults to [del].
  *
  * @note This function is not IDS-specific. The action will remain linked to the given key for all IDSes
  * until it is changed by the programmer.
  *
- * @param kb_register Keypad data register
  * @param key Key
 */
 void textio_SetBackspaceKey(sk_key_t key);
 
 /**
- * Sets up the keypad data register and key for the key that moves the cursor left.
+ * Sets the key that moves the cursor left. Defaults to the left arrow key.
  *
  * @note This function is not IDS-specific. The action will remain linked to the given key for all IDSes
  * until it is changed by the programmer.
  *
- * @param kb_register Keypad data register
  * @param key Key
 */
 void textio_SetCursorLeftKey(sk_key_t key);
 
 /**
- * Sets up the keypad data register and key for the key that moves the cursor right.
+ * Sets the key that moves the cursor right. Defaults to the right arrow key.
  *
  * @note This function is not IDS-specific. The action will remain linked to the given key for all IDSes
  * until it is changed by the programmer.
  *
- * @param kb_register Keypad data register
  * @param key Key
 */
 void textio_SetCursorRightKey(sk_key_t key);
@@ -591,6 +701,16 @@ void textio_SetThetaCodepoint(uint8_t codepoint);
 char textio_GetThetaCodepoint(void);
 
 /**
+ * Sets the function that TextIOC will use to draw the theta character. This is a necessary
+ * function for getting program/appvar names.
+ *
+ * @see textio_CreatePrgmNameIDS
+ *
+ * @param function_ptr Pointer to function
+*/
+void textio_SetDrawThetaCharFunction(void *function_ptr);
+
+/**
  * Converts any codepoints in \p name that correspond to the codepoint set by
  * textio_SetThetaCodepoint into the TI-OS theta codepoint (0x5B).
  *
@@ -622,16 +742,87 @@ typedef enum {
 	TEXTIOC_PRINT_LEFT_MARGIN_FLUSH = 0x01,
 	
 	/**
-	 * Enables right-margin-flush printing.
-	*/
-	TEXTIOC_PRINT_RIGHT_MARGIN_FLUSH = 0x02,
-	
-	/**
 	 * Enables centered printing.
 	*/
-	TEXTIOC_PRINT_CENTERED = 0x03
+	TEXTIOC_PRINT_CENTERED = 0x02,
+	
+	/**
+	 * Enables right-margin-flush printing.
+	*/
+	TEXTIOC_PRINT_RIGHT_MARGIN_FLUSH = 0x03
 	
 } textio_print_format_options_t;
+
+/**
+ * Sets the text window that textio_PrintText will use.
+ *
+ * @param xPos Window x-position
+ * @param yPos Window y-position
+ * @param width Window width
+ * @param height Window height
+*/
+void textio_SetTextWindow(uint24_t xPos, uint8_t yPos, uint24_t width, uint8_t height);
+
+/**
+ * Gets the text window's x-position.
+ *
+ * @return Window's x-position
+*/
+uint24_t textio_GetTextWindowX(void);
+
+/**
+ * Gets the text window's y-position.
+ *
+ * @return Window's y-position
+*/
+uint8_t textio_GetTextWindowY(void);
+
+/**
+ * Gets the text window's width.
+ *
+ * @return Window's width
+*/
+uint24_t textio_GetTextWindowWidth(void);
+
+/**
+ * Gets the text window's height.
+ *
+ * @return Window's height
+*/
+uint8_t textio_GetTextWindowHeight(void);
+
+/**
+ * Sets the amount of space (in pixels) between each line.
+ *
+ * @param above Amount of space above the line
+ * @param below Amount of space below the line
+*/
+void textio_SetLineSpacing(uint8_t above, uint8_t below);
+
+/**
+ * Gets the amount of space (in pixels) between one line and the one above.
+ *
+ * @return Space above the line
+*/
+uint8_t textio_GetLineSpacingAbove(void);
+
+/**
+ * Gets the amount of space (in pixels) between one line and the one below.
+ *
+ * @return Space below the line
+*/
+uint8_t textio_GetLineSpacingBelow(void);
+
+/**
+ * Instructs TextIOC what height the current font is.
+ *
+ * @note This is necessary because GraphX does not provide a function that
+ * returns the font height. The programmer is expected to know or calculate
+ * the height of the GraphX font.
+ *
+ * @param height Height of current font
+*/
+void textio_SetFontHeight(uint8_t height);
 
 /**
  * Sets the print format for textio_PrintText.
@@ -648,6 +839,20 @@ bool textio_SetPrintFormat(uint8_t format);
  * @return Current print format code
 */
 uint8_t textio_GetPrintFormat(void);
+
+/**
+ * Sets the codepoint that will act as the newline character.
+ *
+ * @param codepoint Codepoint
+*/
+void textio_SetNewlineCode(char codepoint);
+
+/**
+ * Gets the codepoint that is acting as the newline character.
+ *
+ * @return Codepoint
+*/
+char textio_GetNewlineCode(void);
 
 /**
  * Sets the tab size.
@@ -687,7 +892,7 @@ void textio_PrintChar(char character);
  * @param character Target character
  * @return Width of character
 */
-uint8_t textio_GetCharWidth(char character);
+uint24_t textio_GetCharWidth(char character);
 
 /**
  * Gets the width of the supplied line.
@@ -697,6 +902,15 @@ uint8_t textio_GetCharWidth(char character);
  * @return Width of line
 */
 uint24_t textio_GetLineWidth(char *line, char *eol);
+
+/**
+ * Gets the width of \p num_chars characters in \c string.
+ *
+ * @param string Pointer to string
+ * @param num_chars Number of characters
+ * @return Width of the desired number of characters
+*/
+uint24_t textio_GetStringWidthL(char *string, uint24_t num_chars);
 
 /**
  * Prints the supplied text in the current text window using the print format set by textio_SetPrintFormat.

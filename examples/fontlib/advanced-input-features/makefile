@@ -8,7 +8,7 @@
 NAME        ?= DEMO
 COMPRESSED  ?= NO
 ICON        ?= icon.png
-DESCRIPTION ?= "TEXTIOC Demo"
+DESCRIPTION ?= "CE C SDK Demo"
 
 # ----------------------------
 

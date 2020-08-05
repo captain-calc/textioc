@@ -5,14 +5,13 @@
 	include 'include/include_library.inc'
 
 ;-------------------------------------------------------------
-	library 'TEXTIOC',1
+	library 'TEXTIOC',2
 ;-------------------------------------------------------------
 
 ;-------------------------------------------------------------
 ; Dependencies
 ;-------------------------------------------------------------
 	include_library 'graphx.asm'
-	include_library 'fontlibc.asm'
 
 ;-------------------------------------------------------------
 ; v1 functions
@@ -75,6 +74,29 @@
 	export textio_GetLinePtr
 
 ;-------------------------------------------------------------
+; v2 functions
+;-------------------------------------------------------------
+	export textio_SetSourceLibrary
+	export textio_SetLibraryRoutines
+	export textio_GetStringWidthL
+	export textio_SetCursorY
+	export textio_GetCursorY
+	export textio_SetDrawThetaCharFunction
+	
+	export textio_SetTextWindow
+	export textio_GetTextWindowX
+	export textio_GetTextWindowY
+	export textio_GetTextWindowWidth
+	export textio_GetTextWindowHeight
+	export textio_SetNewlineCode
+	export textio_GetNewlineCode
+
+	export textio_SetLineSpacing
+	export textio_GetLineSpacingAbove
+	export textio_GetLineSpacingBelow
+	export textio_SetFontHeight
+
+;-------------------------------------------------------------
 ; Global defines
 ;-------------------------------------------------------------
 	arg0	:= 3
@@ -83,6 +105,10 @@
 	arg3	:= 12
 	arg4	:= 15
 	
+	; These indicate what kind of text functions will be used
+	SrcLib_GraphX	:= 0
+	SrcLib_Fontlib	:= 1
+	
 	; These offsets are used for util.GetIDSDataPtr
 	curr_char_ptr_offset		:= 0
 	xPos_offset			:= 3
@@ -90,14 +116,16 @@
 	first_visible_char_ptr_offset	:= 7
 	visible_buffer_width_offset	:= 10
 	cursor_color_offset		:= 13
-	cursor_width_offset		:= 14
-	cursor_height_offset		:= 15
-	timer_offset			:= 16
-	ids_attr_offset			:= 19
-	num_keymaps_offset		:= 20
-	curr_keymap_num_offset		:= 21
-	first_keymap_offset		:= 22
+	cursor_y_offset			:= 14
+	cursor_width_offset		:= 15
+	cursor_height_offset		:= 16
+	timer_offset			:= 17
+	ids_attr_offset			:= 20
+	num_keymaps_offset		:= 21
+	curr_keymap_num_offset		:= 22
+	first_keymap_offset		:= 23
 	
+	ids_data_size	:= $1b		; (27 bytes)
 	keymap_size	:= $39		; (57 bytes)
 	
 	null	:= $00
@@ -116,6 +144,56 @@ macro mOpenDebugger
 	ld	(hl),2
 	pop	hl
 end macro
+
+
+;=============================================================;
+;                                                             ;
+;                Library Setup Functions                      ;
+;                                                             ;
+;=============================================================;
+
+
+textio_SetSourceLibrary:
+; The source library is an external library that supplies implementations
+; of basic text routines that TextIOC uses, such as GraphX and FontLibC.
+; Arguments:
+;   arg0 = source library code
+; Returns:
+;   None
+; Destroys:
+;   HL
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	a,(hl)
+	ld	hl,_SourceLibrary
+	ld	(hl),a
+	ret
+
+
+;-------------------------------------------------------------
+textio_SetLibraryRoutines:
+; Arguments:
+;   arg0 = pointer to structure
+; Returns:
+;   None
+; Destroys:
+;   HL and IY
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	iy,(hl)
+	ld	hl,(iy)
+	ld	(_SetCursorPosition),hl
+	ld	hl,(iy + 3)
+	ld	(_GetTextX),hl
+	ld	hl,(iy + 6)
+	ld	(_GetTextY),hl
+	ld	hl,(iy + 9)
+	ld	(_DrawChar),hl
+	ld	hl,(iy + 12)
+	ld	(_GetCharWidth),hl
+	ret
 
 
 ;=============================================================;
@@ -152,7 +230,7 @@ textio_AllocIDS:
 	pop	bc				; BC = amount of bytes to allocate
 	pop	hl				; HL = data buffer size
 	add	hl,bc
-	ld	bc,26				; Add 26 more bytes for other IDS data
+	ld	bc,ids_data_size		; Add more bytes for other IDS data
 	add	hl,bc				; HL = total size of IDS
 	
 	push	hl				; Put HL on the stack for malloc routine
@@ -594,10 +672,9 @@ util.GetCursorBGColor:
 ; Destroys:
 ;   BC, DE, and HL
 
-	call	util.GetFirstVisibleCharPtr_IDSPtr
-	dec	hl				; HL -> IDS yPos
-	ld	bc, 0
-	ld	c,(hl)
+	call	util.GetCursorY
+	ld	bc,0
+	ld	c,a
 	push	bc
 	ld	hl,(_CurrCursorX)
 	push	hl
@@ -630,9 +707,9 @@ textio_SetCursorBlinkRate:
 	srl	l
 	pop	af
 	jr	nc,.return
-	ld	a, l
-	xor	a, $80				; Carry the lowest bit of H
-	ld	l, a				; into the highest bit of L
+	ld	a,l
+	xor	a,$80				; Carry the lowest bit of H
+	ld	l,a				; into the highest bit of L
 
 .return:
 	ld	(_HalfCursorDisplayTime),hl
@@ -650,6 +727,60 @@ textio_GetCurrCursorX:
 
 	ld	hl,(_CurrCursorX)
 	ret
+
+
+;-------------------------------------------------------------
+textio_SetCursorY:
+; Arguments:
+;   arg0 = IDS pointer
+;   arg1 = cursor y-position
+; Returns:
+;   None
+; Destroys:
+;   A, BC, DE, and HL
+
+	ld	hl,arg1
+	add	hl,sp
+	ld	a,(hl)
+	dec	hl
+	dec	hl
+	dec	hl
+	ld	hl,(hl)
+	ld	bc,cursor_y_offset
+	call	util.GetIDSDataPtr
+	ld	(hl),a
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetCursorY:
+; Arguments:
+;   arg0 = IDS pointer
+; Returns:
+;   A = cursor y-position
+; Destroys:
+;   BC, DE, and HL
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	hl,(hl)
+assert $= util.GetCursorY
+
+
+;-------------------------------------------------------------
+util.GetCursorY:
+; Arguments:
+;   HL -> IDS
+; Returns:
+;   A = cursor y-position
+; Destroys:
+;   BC, DE, and HL
+
+	ld	bc,cursor_y_offset
+	call	util.GetIDSDataPtr
+	ld	a,(hl)
+	ret
+
 
 ;-------------------------------------------------------------
 textio_SetCursorDimensions:
@@ -1356,7 +1487,7 @@ textio_SetClearKey:
 ; Returns:
 ;   None
 ; Destroys:
-;   A, DE, and HL
+;   A and HL
 
 	ld	hl,arg0
 	add	hl,sp
@@ -1368,12 +1499,11 @@ textio_SetClearKey:
 ;-------------------------------------------------------------
 textio_SetBackspaceKey:
 ; Arguments:
-;   arg0 = register of desired key
-;   arg1 = key bit
+;   arg0 = key
 ; Returns:
 ;   None
 ; Destroys:
-;   A, DE, and HL
+;   A and HL
 
 	ld	hl,arg0
 	add	hl,sp
@@ -1385,12 +1515,11 @@ textio_SetBackspaceKey:
 ;-------------------------------------------------------------
 textio_SetCursorLeftKey:
 ; Arguments:
-;   arg0 = register of desired key
-;   arg1 = key bit
+;   arg0 = key
 ; Returns:
 ;   None
 ; Destroys:
-;   A, DE, and HL
+;   A and HL
 
 	ld	hl,arg0
 	add	hl,sp
@@ -1402,12 +1531,11 @@ textio_SetCursorLeftKey:
 ;-------------------------------------------------------------
 textio_SetCursorRightKey:
 ; Arguments:
-;   arg0 = register of desired key
-;   arg1 = key bit
+;   arg0 = key
 ; Returns:
 ;   None
 ; Destroys:
-;   A, DE, and HL
+;   A and HL
 
 	ld	hl,arg0
 	add	hl,sp
@@ -1432,10 +1560,10 @@ util.EraseVisibleBufferContents:
 	pop	hl
 	pop	hl
 
-	call	util.GetCursorHeight
-	ld	bc,0
-	ld	c,a
-	push	bc
+	ld	bc,cursor_height_offset
+	call	util.GetIDSDataPtr
+	ld	hl,(hl)
+	push	hl
 	
 ; Get the cursor width and add it to the visible_buffer_width to take care of any
 ; cursor overdraw
@@ -1450,14 +1578,14 @@ util.EraseVisibleBufferContents:
 	add	hl,bc
 	push	hl
 	ex	de,hl
-	call	util.GetFirstVisibleCharPtr_IDSPtr
-	dec	hl				; HL -> IDS yPos
-	ld	bc,0
-	ld	c,(hl)				; BC = yPos
-	push	bc
-	dec	hl
-	dec	hl
-	dec	hl				; HL -> IDS xPos
+	
+	ld	bc,cursor_y_offset
+	call	util.GetIDSDataPtr
+	ld	hl,(hl)
+	push	hl
+	ex	de,hl
+	ld	bc,xPos_offset
+	call	util.GetIDSDataPtr
 	ld	hl,(hl)
 	push	hl
 	call	gfx_FillRectangle_NoClip
@@ -1493,7 +1621,7 @@ util.DrawDataBufferContents:
 	call	util.GetIDSX
 	inc	hl				; Increment xPos so that the char doesn't overdraw the cursor
 	push	hl
-	call	fontlib_SetCursorPosition
+	call	util.SetCursorPosition
 	pop	hl
 	pop	hl
 	pop	hl
@@ -1553,10 +1681,12 @@ util.DrawDataBufferContents:
 	ld	de,0
 	ld	e,(hl)
 	push	de
-	call	fontlib_GetGlyphWidth
+	call	util.GetCharWidth
 	pop	de
 	pop	bc
-	call	util.AddAtoBC_2byte
+	add	hl,bc
+	push	hl
+	pop	bc
 	pop	de				; DE -> char being processed
 	pop	hl				; HL -> IDS
 
@@ -1588,9 +1718,24 @@ util.DrawDataBufferContents:
 	push	hl
 	ld	de,0
 	ld	e,(hl)
+
+; If the character being processed is the theta codepoint set by the programmer,
+; call a programmer-defined function that draws the theta character instead of
+; printing the character automatically. This compensates for not being able to edit
+; the GraphX font like you can a FontLibC font.
+	call	textio_GetThetaCodepoint
+	cp	a,e
+	jr	nz,.drawNormal
+
+	ld	hl,(_DrawThetaChar)
+	call	util.CallHL
+	jr	.cont4
+
+.drawNormal:
 	push	de
-	call	fontlib_DrawGlyph
+	call	util.DrawChar
 	pop	de
+.cont4:
 	pop	hl				; HL -> char being processed
 	pop	de				; DE -> IDS
 	pop	bc				; BC =  width of visible chars
@@ -1719,7 +1864,7 @@ util.DrawCursor:
 	pop	hl
 	
 	ld	bc,cursor_height_offset
-	call	util.GetIDSDataPtr			; util.GetIDSDataPtr will return the IDS pointer in DE
+	call	util.GetIDSDataPtr		; util.GetIDSDataPtr will return the IDS pointer in DE
 	ld	bc,0
 	ld	c,(hl)
 	push	bc
@@ -1729,7 +1874,7 @@ util.DrawCursor:
 	push	bc
 	ex	de,hl
 	
-	ld	bc,yPos_offset
+	ld	bc,cursor_y_offset
 	call	util.GetIDSDataPtr
 	ld	c,(hl)
 	push	bc
@@ -2213,9 +2358,10 @@ util.ScrollVisibleCharsRight:
 	ex	de,hl
 	xor	a,a
 	sbc	hl,de				; HL = curr_char_ptr | DE = first_visible_char_ptr
+	inc	hl
 	push	hl
 	push	de
-	call	fontlib_GetStringWidthL
+	call	textio_GetStringWidthL
 	ex	de,hl				; After exchange: DE = width of (visible chars + char to the
 						; right of the last visible one)
 	pop	hl
@@ -2240,13 +2386,12 @@ util.ScrollVisibleCharsRight:
 	ld	bc,0
 	ld	c,(hl)
 	push	bc
-	call	fontlib_GetGlyphWidth
+	call	util.GetCharWidth
+	ex	de,hl				; After exchange: DE = character width
 	pop	bc
 	pop	hl				; HL =  width of visible chars
-	ld	bc,0
-	ld	c,a
 	xor	a,a
-	sbc	hl,bc
+	sbc	hl,de
 	ex	de,hl
 	pop	hl				; HL -> IDS
 	push	de				; DE = width of visible chars
@@ -2439,6 +2584,22 @@ textio_GetThetaCodepoint:
 
 
 ;-------------------------------------------------------------
+textio_SetDrawThetaCharFunction:
+; Arguments:
+;   arg0 = Pointer to function that draws the theta character
+; Returns:
+;   None
+; Destroys:
+;   HL
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	hl,(hl)
+	ld	(_DrawThetaChar),hl
+	ret
+
+
+;-------------------------------------------------------------
 textio_ConvertProgramAppvarName_TIOS:
 ; Converts any codepoints in the specified name that correspond
 ; to the codepoint set by textio_SetThetaCodepoint() into the
@@ -2522,6 +2683,153 @@ textio_ConvertProgramAppvarName_TextIOC:
 ;=============================================================;
 
 
+textio_SetTextWindow:
+; Arguments:
+;   arg0 = x-position
+;   arg1 = y-position
+;   arg2 = width
+;   arg3 = height
+; Returns:
+;   None
+; Destroys:
+;   IY, A, and HL
+
+	ld	iy,0
+	add	iy,sp
+	push	iy
+	ld	hl,(iy + arg1)
+	ld	(_TextWindowY),hl
+	push	hl
+	ld	a,(iy + arg0)
+	ld	(_TextWindowX),a
+	ld	hl,0
+	ld	l,a
+	push	hl
+	call	util.SetCursorPosition
+	pop	hl
+	pop	hl
+	pop	iy
+	ld	hl,(iy + arg2)
+	ld	(_TextWindowWidth),hl
+	ld	a,(iy + arg3)
+	ld	(_TextWindowHeight),a
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetTextWindowX:
+; Arguments:
+;   None
+; Returns:
+;   HL = x-position of text window
+; Destroys:
+;   None
+
+	ld	hl,(_TextWindowX)
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetTextWindowY:
+; Arguments:
+;   None
+; Returns:
+;   A = y-position of text window
+; Destroys:
+;   None
+
+	ld	a,(_TextWindowY)
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetTextWindowWidth:
+; Arguments:
+;   None
+; Returns:
+;   HL = width of text window
+; Destroys:
+;   None
+
+	ld	hl,(_TextWindowWidth)
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetTextWindowHeight:
+; Arguments:
+;   None
+; Returns:
+;   A = height of text window
+; Destroys:
+;   None
+
+	ld	a,(_TextWindowHeight)
+	ret
+
+
+;-------------------------------------------------------------
+textio_SetLineSpacing:
+; Arguments:
+;   arg0 = space above line
+;   arg1 = space below line
+; Returns:
+;   None
+; Destroys:
+;   DE and HL
+
+	pop	de
+	pop	hl
+	ld	(_LineSpacingAbove),hl
+	ex	(sp),hl
+	ld	(_LineSpacingBelow),hl
+	push	hl
+	ex	de,hl
+	jp	(hl)
+
+;-------------------------------------------------------------
+textio_GetLineSpacingAbove:
+; Arguments:
+;   None
+; Returns:
+;   A = spacing above line
+; Destroys:
+;   None
+
+	ld	a,(_LineSpacingAbove)
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetLineSpacingBelow:
+; Arguments:
+;   None
+; Returns:
+;   A = spacing below line
+; Destroys:
+;   None
+
+	ld	a,(_LineSpacingBelow)
+	ret
+
+
+;-------------------------------------------------------------
+textio_SetFontHeight:
+; Arguments:
+;   arg0 = height of font
+; Returns:
+;   None
+; Destroys:
+;   A and HL
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	a,(hl)
+	ld	(_FontHeight),a
+	ret
+
+
+;-------------------------------------------------------------
 textio_SetPrintFormat:
 ; Arguments:
 ;   arg0 = format code
@@ -2560,7 +2868,36 @@ textio_GetPrintFormat:
 
 	ld	a,(_PrintFormat)
 	ret
-	
+
+
+;-------------------------------------------------------------
+textio_SetNewlineCode:
+; Arguments:
+;   arg0 = character
+; Returns:
+;   None
+; Destroys:
+;   A and HL
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	a,(hl)
+	ld	(_NewlineCode),a
+	ret
+
+
+;-------------------------------------------------------------
+textio_GetNewlineCode:
+; Arguments:
+;   None
+; Returns:
+;   A = newline character
+; Destroys:
+;   None
+
+	ld	a,(_NewlineCode)
+	ret
+
 
 ;-------------------------------------------------------------
 textio_SetTabSize:
@@ -2585,14 +2922,15 @@ textio_GetTabSize:
 ; Arguments:
 ;   None
 ; Returns:
-;   Width of tab
+;   A = width of tab
 ; Destroys:
-;   All working registers
+;   None
 
 	ld	a,(_TabWidth)
 	ret
 
 
+;-------------------------------------------------------------
 textio_PrintChar:
 ; Arguments:
 ;   arg0 = char
@@ -2608,11 +2946,11 @@ textio_PrintChar:
 	jr	z,.printTab
 	ld	hl,(hl)
 	push	hl
-	call	fontlib_DrawGlyph
+	call	util.DrawChar
 	pop	hl
 	ret
 .printTab:
-	jr	textio_PrintTab
+assert $= textio_PrintTab
 
 
 ;-------------------------------------------------------------
@@ -2631,7 +2969,7 @@ textio_PrintTab:
 .loop:
 	push	bc
 	push	hl
-	call	fontlib_DrawGlyph
+	call	util.DrawChar
 	pop	hl
 	pop	bc
 	djnz	.loop
@@ -2643,10 +2981,9 @@ textio_GetCharWidth:
 ; Arguments:
 ;   arg0 = char
 ; Returns:
-;   Width of char
-;   C and A = 0 if invalid codepoint; NC if valid
+;   HL = width of char
 ; Destroys:
-;   A, B, DE, and HL
+;   All
 
 	ld	hl,arg0
 	add	hl,sp
@@ -2658,24 +2995,22 @@ textio_GetCharWidth:
 	sbc	hl,hl
 	ld	l,b
 	push	hl
-	call	fontlib_GetGlyphWidth
-	pop	hl
+	call	util.GetCharWidth
+	pop	de
 	ret
 .getTabWidth:
-	or	a,a
-	sbc	hl,hl
+	ld	hl,0
 	push	hl
 	ld	l,space
 	push	hl
-	call	fontlib_GetGlyphWidth
-	pop	hl
-	pop	hl
-	ld	l,a
+	call	util.GetCharWidth
+	pop	de
+	pop	de
 	call	textio_GetTabSize
-	ld	h,a
-	mlt	hl
-	ld	a,l 				; This only returns L, so any tab_width * space_width that
-	ret					; is greater than 255 will not behave as expected
+	ld	bc,0
+	ld	c,a
+	call	util.MultiplyHLBC
+	ret
 
 
 ;-------------------------------------------------------------
@@ -2687,24 +3022,57 @@ textio_GetLineWidth:
 ;   HL = Width of line
 ; Destroys:
 ;   All working registers and iy
-	
-	or	a,a
-	sbc	hl,hl
-	ex	hl,de
-	
+
 	ld	iy,0
 	add	iy,sp
-	ld	hl,(iy + arg0)	; hl -> line
-	ld	bc,(iy + arg1) ; bc -> eol
-
-.loop:
+	ld	de,(iy + arg0)			; hl -> line
+	ld	hl,(iy + arg1) 			; bc -> eol
+	xor	a,a
+	sbc	hl,de
 	push	hl
-	or	a,a
+	pop	bc				; Number of characters in line
+	inc	bc
+	ex	de,hl
+	push	bc
+	push	hl
+	call	textio_GetStringWidthL
+	pop	bc
+	pop	bc
+	ret
+
+;-------------------------------------------------------------
+textio_GetStringWidthL:
+; Arguments:
+;   arg0 = pointer to string
+;   arg1 = number of characters
+; Returns:
+;   HL = width of characters
+; Destroys:
+;   All
+
+	ld	hl,arg1
+	add	hl,sp
+	ld	bc,(hl)
+	dec	hl
+	dec	hl
+	dec	hl
+	ld	hl,(hl)
+	ld	de,0				; DE = width of characters
+.loop:
+; Return if BC == 0
+	push	hl
+	dec	bc
+	push	bc
+	push	bc
+	pop	hl
+	ld	bc,0
+	xor	a,a
 	sbc	hl,bc
+	pop	bc
 	pop	hl
 	jr	z,.exit
 	
-	call	fontlib_GetNewlineCode
+	call	textio_GetNewlineCode
 	cp	a,(hl)
 	jr	z,.exit
 	
@@ -2712,24 +3080,19 @@ textio_GetLineWidth:
 	cp	a,null
 	jr	z,.exit
 	
+	push	hl
 	push	bc
 	push	de
-	push	hl
-	or	a,a
-	sbc	hl,hl
-	ex	de,hl
-	pop	hl
+	ld	de,0
 	ld	e,(hl)
-	push	hl
 	push	de
 	call	textio_GetCharWidth
-	pop	hl
-	pop	hl
 	pop	de
+	pop	de
+	add	hl,de
+	ex	de,hl
 	pop	bc
-	call	util.AddAToDE
-
-.nextChar:
+	pop	hl
 	inc	hl				; HL should be pointer to line
 	jr	.loop
 
@@ -2748,13 +3111,6 @@ textio_PrintText:
 ; Destroys:
 ;   All registers and iy
 
-; Set first printable char to $20
-	or	a,a
-	sbc	hl,hl
-	ld	l,space
-	push	hl
-	call	fontlib_SetFirstPrintableCodePoint
-	pop	hl
 ; Load text pointer into HL
 	ld	hl,arg0
 	add	hl,sp
@@ -2767,10 +3123,10 @@ textio_PrintText:
 	ld	hl,9
 	add	hl,sp
 	ld	de,(hl)
-	call	fontlib_GetWindowXMin
+	call	textio_GetTextWindowX
 	push	de
 	push	hl
-	call	fontlib_SetCursorPosition
+	call	util.SetCursorPosition
 	pop	hl
 	pop	hl
 	pop	hl
@@ -2791,15 +3147,6 @@ textio_PrintText:
 	push	de
 	push	hl
 	call	textio_GetLinePtr
-	
-; Set alternate stop code to NULL
-	push	hl
-	or	a,a
-	sbc	hl,hl
-	push	hl
-	call	fontlib_SetAlternateStopCode
-	pop	hl
-	pop	hl
 	pop	de			; DE holds pointer to start of current line
 	pop	bc
 	ex	de,hl
@@ -2811,14 +3158,11 @@ textio_PrintText:
 	ld	a,(_PrintFormat)
 	cp	a,bPrintLeftMarginFlush
 	jr	nz,.testForCentered
-	or	a,a
-	sbc	hl,hl
-	call	fontlib_GetCursorY
-	ld	l,a
+	call	util.GetTextY
 	push	hl
-	call	fontlib_GetWindowXMin
+	call	textio_GetTextWindowX
 	push	hl
-	call	fontlib_SetCursorPosition
+	call	util.SetCursorPosition
 	pop	hl
 	pop	hl
 	jr	.finishTest
@@ -2831,7 +3175,7 @@ textio_PrintText:
 	ld	c,2
 	call	util.DivideHLBC
 	push	hl
-	call	fontlib_GetWindowWidth
+	call	textio_GetTextWindowWidth
 	ld	bc,0
 	ld	c,2
 	call	util.DivideHLBC
@@ -2839,18 +3183,15 @@ textio_PrintText:
 	or	a,a
 	sbc	hl,de
 	push	hl
-	call	fontlib_GetWindowXMin
+	call	textio_GetTextWindowX
 	pop	de
 	add	hl,de
 	push	hl
-	or	a,a
-	sbc	hl,hl
-	call	fontlib_GetCursorY
-	ld	l,a
+	call	util.GetTextY
 	pop	de
 	push	hl
 	push	de
-	call	fontlib_SetCursorPosition
+	call	util.SetCursorPosition
 	pop	hl
 	pop	hl
 	jr	.finishTest
@@ -2860,21 +3201,18 @@ textio_PrintText:
 	jr	nz,.finishTest
 	call	textio_GetLineWidth
 	ex	de,hl
-	call	fontlib_GetWindowWidth
+	call	textio_GetTextWindowWidth
 	or	a,a
 	sbc	hl,de
 	ex	de,hl
-	call	fontlib_GetWindowXMin
+	call	textio_GetTextWindowX
 	add	hl,de
 	push	hl
-	or	a,a
-	sbc	hl,hl
-	call	fontlib_GetCursorY
-	ld	l,a
+	call	util.GetTextY
 	pop	de
 	push	hl
 	push	de
-	call	fontlib_SetCursorPosition
+	call	util.SetCursorPosition
 	pop	hl
 	pop	hl
 	
@@ -2884,7 +3222,7 @@ textio_PrintText:
 	
 .innerLoop:
 ; If current char != printable glyph, jump to getNextLine
-	call	fontlib_GetNewlineCode
+	call	textio_GetNewlineCode
 	cp	a,(hl)
 	jr	z,.testForNextLine
 	push	de
@@ -2911,9 +3249,14 @@ textio_PrintText:
 	ex	de,hl
 	pop	de
 	jr	nz,.innerLoop
+
 	push	de
-	call	fontlib_Newline
+	call	util.Newline
 	pop	hl
+
+; Return if util.Newline detected that the bottom margin of the
+; text window has been exceeded
+	ret	c
 	jp	.outerLoop
 	
 	
@@ -2931,13 +3274,6 @@ textio_GetLinePtr:
 	or	a,a
 	sbc	hl,hl
 	ld	(_LineWidth),hl
-
-; Set first printable character and alternate stop code to 0x20 (space)
-	ld	l,space
-	push	hl
-	call	fontlib_SetFirstPrintableCodePoint
-	call	fontlib_SetAlternateStopCode
-	pop	hl
 
 ; Set the current line number to zero
 	ld	a,0
@@ -2979,7 +3315,7 @@ textio_GetLinePtr:
 	push	hl
 	pop	bc				; BC = approximated pointer
 .innerLoop:
-	call	fontlib_GetNewlineCode
+	call	textio_GetNewlineCode
 	cp	a,(hl)
 	jr	z,.testForPrintFormat
 
@@ -2990,9 +3326,10 @@ textio_GetLinePtr:
 	jr	z,.breakString
 	
 	dec	hl
-	ld	a,$20
+	ld	a,space
 	cp	a,(hl)
 	jr	c,.innerLoop
+	
 ;	push	de
 ;	push	hl				; If after the first DEC HL, (HL) is a space, this will force
 ;	ex	de,hl
@@ -3005,6 +3342,7 @@ textio_GetLinePtr:
 ;	pop	hl
 ;	pop	de
 ;	jr	z,.innerLoop
+	
 	jr	.testForPrintFormat
 
 .breakString:
@@ -3020,7 +3358,7 @@ textio_GetLinePtr:
 	jr	z,.incHL
 	cp	a,bPrintCentered
 	jr	z,.incHL
-	call	fontlib_GetNewlineCode
+	call	textio_GetNewlineCode
 	cp	a,(hl)
 	jr	z,.incHL
 	jr	.startNewLine
@@ -3051,7 +3389,7 @@ util.GetApproximateLinePtr:
 ; Destroys:
 ;   All working registers
 
-	; Save pointer to start of line
+; Save pointer to start of line
 	push	hl
 .loop:
 	pop	de
@@ -3063,14 +3401,15 @@ util.GetApproximateLinePtr:
 	pop	hl				; HL = pointer to current character
 	push	bc
 	push	hl
-	call	fontlib_GetWindowWidth
+	call	textio_GetTextWindowWidth
 	or	a,a
 	sbc	hl,de
 	pop	hl				; HL = pointer to current character
 	pop	de				; DE = pointer to start of line
+	ld	a,1
 	ret	c
 
-	call	fontlib_GetNewlineCode
+	call	textio_GetNewlineCode
 	cp	a,(hl)
 	ret	z
 
@@ -3084,14 +3423,11 @@ util.GetApproximateLinePtr:
 	push	hl
 	push	bc
 	call	textio_GetCharWidth
+
+; Add character width to line width and increment HL
 	pop	bc
-	push	af
-	or	a,a
-	sbc	hl,hl
 	ex	de,hl
-	pop	af
 	ld	hl,(_LineWidth)
-	ld	e,a
 	add	hl,de
 	ld	(_LineWidth),hl
 	pop	hl
@@ -3150,7 +3486,7 @@ util.breakString:
 	ld	e,(hl)
 	push	hl
 	push	de
-	call	fontlib_GetGlyphWidth
+	call	textio_GetCharWidth
 	pop	de
 	pop	hl
 .addToStrWidth:
@@ -3165,11 +3501,9 @@ util.breakString:
 	add	hl,de
 	ex	de,hl
 ; If line width + fragment width < window width, jump to loop
-	push	bc
-	call	fontlib_GetWindowWidth		; Destroys BC | Returns HL
+	call	textio_GetTextWindowWidth
 	or	a,a
 	sbc	hl,de
-	pop	bc
 	pop	hl
 	ret	c
 ; Since char was successfully added, add its width to the line width
@@ -3314,22 +3648,275 @@ util.DivideHLBC:
 	ret
 
 
+;-------------------------------------------------------------
+util.MultiplyHLDE:
+; Performs (un)signed integer multiplication
+; Designed by the CE Programming SDK Team. Copied from graphx.asm
+; URL: https://github.com/CE-Programming/toolchain/blob/master/src/graphx/graphx.asm
+; Inputs:
+;  HL = Operand 1
+;  DE = Operand 2
+; Outputs:
+;  HL = HL * DE
+
+	push	de
+	pop	bc
+
+;-------------------------------------------------------------
+util.MultiplyHLBC:
+; Performs (un)signed integer multiplication
+; Designed by the CE Programming SDK Team. Copied from graphx.asm
+; URL: https://github.com/CE-Programming/toolchain/blob/master/src/graphx/graphx.asm
+; Inputs:
+;  HL = Operand 1
+;  BC = Operand 2
+; Outputs:
+;  HL = HL * BC
+
+	push	iy
+	push	hl
+	push	bc
+	push	hl
+	ld	iy,0
+	ld	d,l
+	ld	e,b
+	mlt	de
+	add	iy,de
+	ld	d,c
+	ld	e,h
+	mlt	de
+	add	iy,de
+	ld	d,c
+	ld	e,l
+	mlt	de
+	ld	c,h
+	mlt	bc
+	ld	a,c
+	inc	sp
+	inc	sp
+	pop	hl
+	mlt	hl
+	add	a,l
+	pop	hl
+	inc	sp
+	mlt	hl
+	add	a,l
+	ld	b,a
+	ld	c,0
+	lea	hl,iy+0
+	add	hl,bc
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,de
+	pop	iy
+	ret
+
+
+;-------------------------------------------------------------
+util.SetCursorPosition:
+; Sets the cursor position using the external function
+; whose address is in _SetCursorPosition
+; Arguments:
+;   arg0 = xPos
+;   arg1 = yPos
+; Returns:
+;   None
+; Destroys:
+;   All
+
+	ld	hl,arg1
+	add	hl,sp
+	ld	de,(hl)
+	push	de
+	dec	hl
+	dec	hl
+	dec	hl
+	ld	de,(hl)
+	push	de
+	ld	hl,(_SetCursorPosition)
+	call	util.CallHL
+	pop	hl
+	pop	hl
+	ret
+
+
+;-------------------------------------------------------------
+util.GetTextX:
+; Arguments:
+;   None
+; Returns:
+;   HL = cursor x-position
+; Destroys:
+;   All
+
+	ld	hl,(_GetTextX)
+	call	util.CallHL
+	ret
+
+
+;-------------------------------------------------------------
+util.GetTextY:
+; Arguments:
+;   None
+; Returns:
+;   HL = cursor y-position
+; Destroys:
+;   All
+
+	ld	hl,(_GetTextY)
+	call	util.CallHL
+	ld	de,0
+	ld	e,a
+; gfx_GetTextY returns an int but fontlib_GetCursorY returns an uint8_t
+	ld	a,(_SourceLibrary)
+	cp	a,SrcLib_GraphX
+	jr	z,.return
+	ex	de,hl
+.return:
+	ret
+
+
+;-------------------------------------------------------------
+util.Newline:
+; Adds the line spacing above and below to the font height
+; and adds it to the current text y-position to set the new
+; text y-position. Sets the text x-position to the text window
+; x-position.
+; Arguments:
+;   None
+; Returns:
+;   NC if the current text y-position is less than the bottom
+;   margin of the text window; C, otherwise.
+; Destroys:
+;   All
+
+	call	util.GetTextY
+	ld	de,0
+	ld	e,a
+	ld	a,(_LineSpacingAbove)
+	add	a,e
+	ld	e,a
+	ld	a,(_FontHeight)
+	add	a,e
+	ld	e,a
+	ld	a,(_LineSpacingBelow)
+	add	a,e
+	ld	e,a
+	add	hl,de
+	push	hl
+	ld	hl,(_TextWindowX)
+	push	hl
+	call	util.SetCursorPosition
+	pop	hl
+	ld	a,(_TextWindowY)
+	ld	e,a
+	ld	a,(_TextWindowHeight)
+	add	a,e
+	pop	de				; E = new text y-position
+	sub	a,e
+	ret	nz
+	scf					; If A == E, set carry flag
+	ret
+
+
+;-------------------------------------------------------------
+util.DrawChar:
+; Draws a character using the external function
+; whose address is in _DrawChar
+; Arguments:
+;   arg0 = character
+; Returns:
+;   None
+; Destroys:
+;   All
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	hl,(hl)
+	push	hl
+	ld	hl,(_DrawChar)
+	call	util.CallHL
+	pop	hl
+	ret
+
+
+;-------------------------------------------------------------
+util.GetCharWidth:
+; Gets the width of a character using the external
+; function whose address is in _GetCharWidth
+; Arguments:
+;   arg0 = character
+; Returns:
+;   HL = width of character
+; Destroys:
+;   All
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	hl,(hl)
+	push	hl
+	ld	hl,(_GetCharWidth)
+	call	util.CallHL
+	pop	de
+
+; fontlib_GetGlyphWidth returns an uint8_t while gfx_GetCharWidth returns an unsigned int
+	push	af				; Save A if FontLibC is being used
+	ld	a,(_SourceLibrary)
+	cp	a,SrcLib_Fontlib
+	jr	z,.fontlib
+	pop	af
+	cp	a,SrcLib_GraphX
+	jr	z,.graphx
+
+; Default case:
+	ret
+
+.fontlib:
+	pop	af
+	ld	hl,0
+	ld	l,a
+	ret
+.graphx:
+	ret
+
 
 ;-------------------------------------------------------------
 ; Internal Library Data
 ;-------------------------------------------------------------
 
-; Key data for textio_Input()
+
+; Pointers for external library function implementations
+_SourceLibrary:
+	db	SrcLib_GraphX
+
+_SetCursorPosition:
+	dl	0
+_GetTextX:
+	dl	0
+_GetTextY:
+	dl	0
+_DrawChar:
+	dl	0
+_GetCharWidth:
+	dl	0
+_DrawThetaChar:
+	dl	0
+
+; Action key defaults
 _ClearKey:
-	db	ti.skClear
+	db	$0f			; sk_Clear
 _BackspaceKey:
-	db	ti.skDel
+	db	$38			; sk_Del
 _CursorLeftKey:
-	db	ti.skLeft
+	db	$02			; sk_Left
 _CursorRightKey:
-	db	ti.skRight
-_KeymapIndicatorKey:
-	db	ti.skAlpha
+	db	$03			; sk_Right
 
 _LastVisibleCharPtr:
 	dl	0
@@ -3398,6 +3985,8 @@ _TabWidth:
 	db	4
 _PrintFormat:
 	db	1
+_NewlineCode:
+	db	$0a
 
 ; Data for textio_GetLinePtr
 _LineWidth:
@@ -3406,3 +3995,20 @@ _CurrLineNum:
 	db	0
 _LineNum:
 	db	0
+
+; Data for TextIOC text window
+_TextWindowX:
+	dl	0
+_TextWindowY:
+	db	0
+_TextWindowWidth:
+	dl	320
+_TextWindowHeight:
+	db	240
+
+_FontHeight:
+	db	0
+_LineSpacingAbove:
+	db	1
+_LineSpacingBelow:
+	db	1
