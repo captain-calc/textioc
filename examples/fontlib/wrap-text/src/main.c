@@ -1,49 +1,89 @@
-#include "fonts/fonts.h"
-
 #include <graphx.h>
 #include <fontlibc.h>
 #include <textioc.h>
-#include <debug.h>
 
-void setup_fontlib_textio(void);
+#include "fonts/fonts.h"
+
+
+// Debugging
+#include <stdio.h>
+#define dbgout ((char*)0xFB0000)
+#define dbgerr ((char*)0xFC0000)
+#define dbg_sprintf sprintf
+
+
+void setup_fontlib_textio(void) {
+
+	/* Setup the FontLib wrapper. */
+	textio_library_routines_t routines = TEXTIO_FONTLIB_ROUTINES;
+
+	/* Pass the wrapper pointers to TextIOC. */
+	textio_SetLibraryRoutines(&routines);
+	return;
+}
+
+void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width) {
+	
+	char *curr_line, *next_line, *curr_char;
+	uint8_t line_spacing = 13;
+	
+	curr_line = text;
+
+	for (;;) {
+		
+		// It is important to remember that textio_GetLineWidth() retrieves the width of all characters between line and eol, INCLUSIVE.
+		next_line = textio_GetLinePtr(curr_line, 1, max_line_width);
+		if (curr_line == next_line)
+			return;
+		
+		if (textio_GetPrintFormat() == TEXTIOC_FORMAT_RIGHT_MARGIN_FLUSH) {
+			fontlib_SetCursorPosition(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1), yPos);
+		} else if (textio_GetPrintFormat() == TEXTIOC_FORMAT_CENTERED) {
+			fontlib_SetCursorPosition((max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1)) / 2, yPos);
+		} else {
+			fontlib_SetCursorPosition(xPos, yPos);
+		};
+		
+		curr_char = curr_line;
+		while (curr_char < next_line) {
+			if (*curr_char == '\t') {
+				fontlib_DrawString("    ");
+			} else if (*curr_char != '\n') {
+				fontlib_DrawGlyph(*curr_char);
+			};
+			curr_char++;
+		};
+		curr_line = next_line;
+		yPos += line_spacing;
+		if (yPos > 240 - line_spacing)
+			return;
+	};
+}
 
 void main(void) {
 	
-	char text[] = {"This line starts with a tab, as many paragraphs usually do in the Western world. This paragraph, made up of several lines of testing text, spans about ten lines. Its objective is to reveal any lurking problems in the textio_PrintText() function which is resposible for the TextIOC's text wrapping."};
+	char text[] = {"\tThis line starts with a tab. The dimensions of the highlighted window are 140 pixels wide by 240 pixels tall. The initial text position is (0, 0). When the text reaches the bottom of the window, any text that will not fit will be truncated."};
 
 	/* Start the graphics */
 	gfx_Begin();
 	
-	/* Setup the custom font. */
-	fontlib_SetFont(test_font, 0);
-	
-	/* Setup the source library. */
+	/* Setup source library. */
 	setup_fontlib_textio();
-	textio_SetFontHeight(fontlib_GetCurrentFontHeight());
-	textio_SetLineSpacing(0, 0);
+	fontlib_SetFont(test_font, 0);
+	fontlib_SetWindow(0, 0, 140, 240);
 	
-	/* Set the text window dimensions*/
-	textio_SetTextWindow(0, 0, 140, 240);
+	/* Set print format to left-margin flush. */
+	textio_SetPrintFormat(TEXTIOC_FORMAT_LEFT_MARGIN_FLUSH);
 	
-	/* Set print format to left-margin flush */
-	textio_SetPrintFormat(TEXTIOC_PRINT_LEFT_MARGIN_FLUSH);
+	/* Set the number of pixels that make up the tab. */
+	textio_SetTabWidth(fontlib_GetGlyphWidth(' ') * 4);
 	
-	/* Set the number of spaces that make up the tab */
-	textio_SetTabSize(5);
+	/* Print the text */
+	print_text(text, 0, 5, 140);
 	
-	/* Print the text in the TextIOC text window. */
-	textio_PrintText(text, 0);
-	
-	/* Print the same text in a FontLib text window. */
-	fontlib_SetWindow(160, 0, 150, 240);
-	fontlib_SetNewlineOptions(FONTLIB_ENABLE_AUTO_WRAP);
-	fontlib_HomeUp();
-	fontlib_DrawString(text);
-	
-	/* Outline the window so we can see it */
+	/* Outline the window. */
 	gfx_SetColor(224);
 	gfx_Rectangle_NoClip(0, 0, 140, 240);
-	gfx_Rectangle_NoClip(160, 0, 150, 240);
 	
 	/* Wait for keypress */
 	while (!os_GetCSC());
@@ -51,28 +91,4 @@ void main(void) {
 	/* Close the graphics */
 	gfx_End();
 	exit(0);
-}
-
-void setup_fontlib_textio(void) {
-
-	/* Allocate the pointer structure. */
-	textio_library_routines_t *ptr = malloc(sizeof(textio_library_routines_t));
-
-	/* Tell TextIOC that it will be using FontLibC. */
-	textio_SetSourceLibrary(TEXTIO_SET_FONTLIBC_AS_SRC_LIB);
-
-	/* Set the struct pointers to the necessary FontLib functions. */
-	ptr->set_cursor_position = &fontlib_SetCursorPosition;
-	ptr->get_cursor_x = &fontlib_GetCursorX;
-	ptr->get_cursor_y = &fontlib_GetCursorY;
-	ptr->draw_char = &fontlib_DrawGlyph;
-	ptr->get_char_width = &fontlib_GetGlyphWidth;
-
-	/* Pass the struct pointers to TextIOC. */
-	textio_SetLibraryRoutines(ptr);
-	
-	/* Free the structure memory. */
-	free(ptr);
-	
-	return;
 }

@@ -1,4 +1,4 @@
-### FontLib Wrap Text Demo
+### Homescreen Wrap Text Demo
 
 ---
 

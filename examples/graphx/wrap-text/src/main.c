@@ -1,13 +1,68 @@
 #include <graphx.h>
 #include <textioc.h>
-#include <debug.h>
 
-void setup_gfx_textio(void);
+
+// Debugging
+#include <stdio.h>
+#define dbgout ((char*)0xFB0000)
+#define dbgerr ((char*)0xFC0000)
+#define dbg_sprintf sprintf
+
+
+void setup_gfx_textio(void) {
+
+	/* Setup the GraphX wrapper. */
+	textio_library_routines_t routines = TEXTIO_GRAPHX_ROUTINES;
+
+	/* Pass the wrapper pointers to TextIOC. */
+	textio_SetLibraryRoutines(&routines);
+	return;
+}
+
+void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width) {
+	
+	char *curr_line, *next_line, *curr_char;
+	uint8_t line_spacing = 9;
+	
+	curr_line = text;
+
+	for (;;) {
+		
+		// It is important to remember that textio_GetLineWidth() retrieves the width of all characters between line and eol, INCLUSIVE.
+		next_line = textio_GetLinePtr(curr_line, 1, max_line_width);
+		
+		// Debugging
+		dbg_sprintf(dbgout, "curr_line = 0x%6x | next_line = 0x%6x\n", curr_line, next_line);
+		
+		if (textio_GetPrintFormat() == TEXTIOC_FORMAT_RIGHT_MARGIN_FLUSH) {
+			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1), yPos);
+		} else if (textio_GetPrintFormat() == TEXTIOC_FORMAT_CENTERED) {
+			gfx_SetTextXY((max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1)) / 2, yPos);
+		} else {
+			gfx_SetTextXY(xPos, yPos);
+		};
+		
+		curr_char = curr_line;
+		while (curr_char < next_line) {
+			if (*curr_char == '\t') {
+				gfx_PrintString("    ");
+			} else if (*curr_char != '\n') {
+				gfx_PrintChar(*curr_char);
+			};
+			curr_char++;
+		};
+		curr_line = next_line;
+		if (*curr_line == '\0')
+			return;
+		yPos += line_spacing;
+		if (yPos > 240 - line_spacing)
+			return;
+	};
+}
 
 void main(void) {
 	
-	char text[] = {"\tThis line starts with a tab, as many paragraphs usually do in the Western world. This paragraph, made up of several lines of testing text, spans about ten lines. Its objective is to reveal any lurking problems in the textio_PrintText() function which is resposible for the TextIOC's text wrapping."};
-	char test[] = {" "};
+	char text[] = {"\tThis line starts with a tab. The dimensions of the highlighted window are 140 pixels wide by 240 pixels tall. The initial text position is (0, 0). When the text reaches the bottom of the window, any text that will not fit will be truncated."};
 
 	/* Start the graphics */
 	gfx_Begin();
@@ -15,37 +70,21 @@ void main(void) {
 	/* Setup source library. */
 	setup_gfx_textio();
 	
-	/* Preliminary configuration */
-	textio_SetFontHeight(8);
-	textio_SetLineSpacing(1, 1);
+	/* Set print format to left-margin flush. */
+	textio_SetPrintFormat(TEXTIOC_FORMAT_LEFT_MARGIN_FLUSH);
 	
-	/* Set the text window dimensions*/
-	textio_SetTextWindow(0, 0, 140, 240);
+	/* Set the number of pixels that make up the tab. */
+	textio_SetTabWidth(gfx_GetCharWidth(' ') * 4);
 	
-	/* Set print format to left-margin flush */
-	textio_SetPrintFormat(TEXTIOC_PRINT_LEFT_MARGIN_FLUSH);
-	
-	/* Set the number of spaces that make up the tab */
-	textio_SetTabSize(5);
+	// Debugging
+	dbg_sprintf(dbgout, "The eagle has landed.");
 	
 	/* Print the text */
-	textio_PrintText(text, 5);
-	gfx_PrintStringXY("This line is printed", 160, 5);
-	gfx_PrintStringXY("without using the", 160, 15);
-	gfx_PrintStringXY("TextIOC library. It is", 160, 25);
-	gfx_PrintStringXY("a demonstration of", 160, 35);
-	gfx_PrintStringXY(" being able to use the", 160, 45);
-	gfx_PrintStringXY("source library's", 160, 55);
-	gfx_PrintStringXY("functions", 160, 65);
-	gfx_PrintStringXY("independantly of", 160, 75);
-	gfx_PrintStringXY("TextIOC while a", 160, 85);
-	gfx_PrintStringXY("TextIOC text window", 160, 95);
-	gfx_PrintStringXY("is active.", 160, 105);
+	print_text(text, 0, 5, 140);
 	
-	/* Outline each "window". */
+	/* Outline the window. */
 	gfx_SetColor(224);
 	gfx_Rectangle_NoClip(0, 0, 140, 240);
-	gfx_Rectangle_NoClip(160, 0, 150, 240);
 	
 	/* Wait for keypress */
 	while (!os_GetCSC());
@@ -53,28 +92,4 @@ void main(void) {
 	/* Close the graphics */
 	gfx_End();
 	exit(0);
-}
-
-void setup_gfx_textio(void) {
-
-	/* Allocate the pointer structure. */
-	textio_library_routines_t *ptr = malloc(sizeof(textio_library_routines_t));
-
-	/* Tell TextIOC that it will be using GraphX. */
-	textio_SetSourceLibrary(TEXTIO_SET_GRAPHX_AS_SRC_LIB);
-
-	/* Set the struct's pointers to the requisite GraphX functions. */
-	ptr->set_cursor_position = &gfx_SetTextXY;
-	ptr->get_cursor_x = &gfx_GetTextX;
-	ptr->get_cursor_y = &gfx_GetTextY;
-	ptr->draw_char = &gfx_PrintChar;
-	ptr->get_char_width = &gfx_GetCharWidth;
-
-	/* Pass the struct pointers to TextIOC. */
-	textio_SetLibraryRoutines(ptr);
-	
-	/* Free the structure memory. */
-	free(ptr);
-	
-	return;
 }
