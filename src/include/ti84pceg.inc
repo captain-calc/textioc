@@ -5349,7 +5349,7 @@ namespace ti?
 ?lastOldApp		:= kExtApps ;external applications
 ?cxextapps		:= kExtApps
 ?cxNewApps		:= kNewApps ;new cerberus applications
-?cxGroup			:= cxNewApps+0 ;1st new app.
+?cxGroup		:= cxNewApps+0 ;1st new app.
 ?cxUnGroup		:= cxNewApps+1 ;2nd new app.
 ?lastNewApp		:= cxUnGroup ;last new app for this ver
 
@@ -5357,15 +5357,15 @@ namespace ti?
 ;------------------------------
 ?skDown			:= 01h
 ?skLeft			:= 02h
-?skRight			:= 03h
+?skRight		:= 03h
 ?skUp			:= 04h
-?skEnter			:= 09h
+?skEnter		:= 09h
 ?skAdd			:= 0Ah
 ?skSub			:= 0Bh
 ?skMul			:= 0Ch
 ?skDiv			:= 0Dh
-?skPower			:= 0Eh
-?skClear			:= 0Fh
+?skPower		:= 0Eh
+?skClear		:= 0Fh
 ?skChs			:= 11h
 ?sk3			:= 12h
 ?sk6			:= 13h
@@ -5385,29 +5385,29 @@ namespace ti?
 ?sk1			:= 22h
 ?sk4			:= 23h
 ?sk7			:= 24h
-?skComma			:= 25h
+?skComma		:= 25h
 ?skSin			:= 26h
 ?skMatrix		:= 27h
 ?skGraphvar		:= 28h
-?skStore			:= 2Ah
+?skStore		:= 2Ah
 ?skLn			:= 2Bh
 ?skLog			:= 2Ch
 ?skSquare		:= 2Dh
-?skRecip			:= 2Eh
+?skRecip		:= 2Eh
 ?skMath			:= 2Fh
-?skAlpha			:= 30h
-?skGraph			:= 31h
-?skTrace			:= 32h
+?skAlpha		:= 30h
+?skGraph		:= 31h
+?skTrace		:= 32h
 ?skZoom			:= 33h
 ?skWindow		:= 34h
-?skYequ 			:= 35h
+?skYequ 		:= 35h
 ?sk2nd			:= 36h
 ?skMode			:= 37h
 ?skDel			:= 38h
 
 ; DI Keyboard Equates
 ;---------------------------
-?DI_Mode		:= 0F50000h
+?DI_Mode	:= 0F50000h
 ?DI_Cntrl	:= 0F50004h
 ?DI_Int		:= 0F50008h
 ?DI_IntMask	:= 0F5000Ch
@@ -5416,21 +5416,21 @@ namespace ti?
 ;----------------------------
 ?kbdGraph	:= 00000001b
 ?kbdTrace	:= 00000010b
-?kbdZoom		:= 00000100b
+?kbdZoom	:= 00000100b
 ?kbdWindow	:= 00001000b
 ?kbdYequ 	:= 00010000b
 ?kbd2nd		:= 00100000b
-?kbdMode		:= 01000000b
+?kbdMode	:= 01000000b
 ?kbdDel		:= 10000000b
 
 ?kbitGraph	:= 00h
 ?kbitTrace	:= 01h
 ?kbitZoom	:= 02h
 ?kbitWindow	:= 03h
-?kbitYequ := 04h
-?kbit2nd		:= 05h
+?kbitYequ	:= 04h
+?kbit2nd	:= 05h
 ?kbitMode	:= 06h
-?kbitDel		:= 07h
+?kbitDel	:= 07h
 
 ?kbdG2		:= 0F50014h
 ;----------------------------
@@ -5439,12 +5439,12 @@ namespace ti?
 ?kbdLog		:= 00001000b
 ?kbdSquare	:= 00010000b
 ?kbdRecip	:= 00100000b
-?kbdMath		:= 01000000b
+?kbdMath	:= 01000000b
 ?kbdAlpha	:= 10000000b
 
 ?kbitStore	:= 01h
 ?kbitLn		:= 02h
-?kbitLog		:= 03h
+?kbitLog	:= 03h
 ?kbitSquare	:= 04h
 ?kbitRecip	:= 05h
 ?kbitMath	:= 06h
@@ -5458,7 +5458,7 @@ namespace ti?
 ?kbd7		:= 00001000b
 ?kbdComma	:= 00010000b
 ?kbdSin		:= 00100000b
-?kbdApps		:= 01000000b
+?kbdApps	:= 01000000b
 ?kbdGraphVar	:= 10000000b
 
 ?kbit0		:= 00h
@@ -5466,7 +5466,7 @@ namespace ti?
 ?kbit4		:= 02h
 ?kbit7		:= 03h
 ?kbitComma	:= 04h
-?kbitSin		:= 05h
+?kbitSin	:= 05h
 ?kbitApps	:= 06h
 ?kbitGraphVar	:= 07h
 
@@ -5478,15 +5478,15 @@ namespace ti?
 ?kbd8		:= 00001000b
 ?kbdLParen	:= 00010000b
 ?kbdCos		:= 00100000b
-?kbdPgrm		:= 01000000b
-?kbdStat		:= 10000000b
+?kbdPgrm	:= 01000000b
+?kbdStat	:= 10000000b
 
 ?kbitDecPnt	:= 00h
 ?kbit2		:= 01h
 ?kbit5		:= 02h
 ?kbit8		:= 03h
 ?kbitLParen	:= 04h
-?kbitCos		:= 05h
+?kbitCos	:= 05h
 ?kbitPgrm	:= 06h
 ?kbitStat	:= 07h
 
@@ -5498,14 +5498,14 @@ namespace ti?
 ?kbd9		:= 00001000b
 ?kbdRParen	:= 00010000b
 ?kbdTan		:= 00100000b
-?kbdVars		:= 01000000b
+?kbdVars	:= 01000000b
 
-?kbitChs		:= 00h
+?kbitChs	:= 00h
 ?kbit3		:= 01h
 ?kbit6		:= 02h
 ?kbit9		:= 03h
 ?kbitRParen	:= 04h
-?kbitTan		:= 05h
+?kbitTan	:= 05h
 ?kbitVars	:= 06h
 
 ?kbdG6		:= 0F5001Ch
@@ -5519,17 +5519,17 @@ namespace ti?
 ?kbdClear	:= 01000000b
 
 ?kbitEnter	:= 00h
-?kbitAdd		:= 01h
-?kbitSub		:= 02h
-?kbitMul		:= 03h
-?kbitDiv		:= 04h
+?kbitAdd	:= 01h
+?kbitSub	:= 02h
+?kbitMul	:= 03h
+?kbitDiv	:= 04h
 ?kbitPower	:= 05h
 ?kbitClear	:= 06h
 
 ?kbdG7		:= 0F5001Eh
 ;----------------------------
-?kbdDown		:= 00000001b
-?kbdLeft		:= 00000010b
+?kbdDown	:= 00000001b
+?kbdLeft	:= 00000010b
 ?kbdRight	:= 00000100b
 ?kbdUp		:= 00001000b
 

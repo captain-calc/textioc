@@ -724,8 +724,13 @@ textio_GetLinePtr:
 	inc	hl
 	ld	de,(hl)
 	ld (_MaxLineWidth),de
+<<<<<<< HEAD
 	push	bc
 	push	bc
+=======
+	push	bc
+	push	bc
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 	pop	hl				; BC -> text
 
 .outerLoop:
@@ -762,12 +767,19 @@ textio_GetLinePtr:
 	pop	hl
 	jr	z,.breakString
 
+<<<<<<< HEAD
 	dec hl
+=======
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 	ld	a,(hl)
 	cp	a,space
 	jr	z,.formatSpace
 	cp	a,tab
 	jr	z,.startNewLine		; Tabs are always prepended to the next line
+<<<<<<< HEAD
+=======
+	dec	hl
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 
 	jr	.innerLoop
 

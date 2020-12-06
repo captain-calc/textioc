@@ -39,6 +39,7 @@ typedef struct {
 } textio_library_routines_t;
 
 /**
+<<<<<<< HEAD
  * Function wrappers for homescreen.
 */
 static void textio_os_SetCursorPos(uint24_t xPos, uint8_t yPos) {
@@ -52,6 +53,8 @@ static uint24_t textio_os_GetGlyphWidth(char codepoint) {
 }
 
 /**
+=======
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
  * Function wrappers for FontLibC.
 */
 static void textio_fontlib_SetCursorPosition(uint24_t xPos, uint8_t yPos) {
@@ -87,6 +90,7 @@ static void textio_gfx_SetTextXY(uint24_t xPos, uint8_t yPos) {
 static uint24_t textio_gfx_GetTextX(void) {
 	return (uint24_t)gfx_GetTextX();
 }
+<<<<<<< HEAD
 
 static uint24_t textio_gfx_GetTextY(void) {
 	return (uint24_t)gfx_GetTextY();
@@ -109,6 +113,21 @@ static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 				textio_os_SetCursorPos, \
 				textio_os_GetGlyphWidth \
 				};
+=======
+
+static uint24_t textio_gfx_GetTextY(void) {
+	return (uint24_t)gfx_GetTextY();
+}
+
+static void textio_gfx_PrintChar(char codepoint) {
+	gfx_PrintChar((const char)codepoint);
+	return;
+}
+*/
+static uint24_t textio_gfx_GetCharWidth(char codepoint) {
+	return (uint24_t)gfx_GetCharWidth((const char)codepoint);
+}
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 
 /**
  * Default external function pointers for FontLibC.

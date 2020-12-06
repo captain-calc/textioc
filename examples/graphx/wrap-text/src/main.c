@@ -30,9 +30,14 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 		
 		// It is important to remember that textio_GetLineWidth() retrieves the width of all characters between line and eol, INCLUSIVE.
 		next_line = textio_GetLinePtr(curr_line, 1, max_line_width);
+<<<<<<< HEAD
 		
 		// Debugging
 		dbg_sprintf(dbgout, "curr_line = 0x%6x | next_line = 0x%6x\n", curr_line, next_line);
+=======
+		if (curr_line == next_line)
+			return;
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 		
 		if (textio_GetPrintFormat() == TEXTIOC_FORMAT_RIGHT_MARGIN_FLUSH) {
 			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1), yPos);
@@ -52,8 +57,11 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 			curr_char++;
 		};
 		curr_line = next_line;
+<<<<<<< HEAD
 		if (*curr_line == '\0')
 			return;
+=======
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 		yPos += line_spacing;
 		if (yPos > 240 - line_spacing)
 			return;
@@ -75,9 +83,12 @@ void main(void) {
 	
 	/* Set the number of pixels that make up the tab. */
 	textio_SetTabWidth(gfx_GetCharWidth(' ') * 4);
+<<<<<<< HEAD
 	
 	// Debugging
 	dbg_sprintf(dbgout, "The eagle has landed.");
+=======
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 	
 	/* Print the text */
 	print_text(text, 0, 5, 140);
