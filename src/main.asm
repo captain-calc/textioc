@@ -725,8 +725,13 @@ textio_GetLinePtr:
 	ld	de,(hl)
 	ld (_MaxLineWidth),de
 <<<<<<< HEAD
+<<<<<<< HEAD
 	push	bc
 	push	bc
+=======
+	push	bc
+	push	bc
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 =======
 	push	bc
 	push	bc
@@ -768,7 +773,10 @@ textio_GetLinePtr:
 	jr	z,.breakString
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	dec hl
+=======
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 =======
 >>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 	ld	a,(hl)
@@ -777,6 +785,10 @@ textio_GetLinePtr:
 	cp	a,tab
 	jr	z,.startNewLine		; Tabs are always prepended to the next line
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+	dec	hl
+>>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
 =======
 	dec	hl
 >>>>>>> 25b1288c97986ae4674ec439bf03a8fdab53563e
