@@ -1,0 +1,9 @@
+	public _PrintChar
+_PrintChar:
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	ld	a,l
+	call	ti.PutC
+	ret
