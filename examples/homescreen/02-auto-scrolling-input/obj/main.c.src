@@ -1,0 +1,569 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.text,"ax",@progbits
+	public	_setup_tios_textio
+_setup_tios_textio:
+	ld	hl, -10
+	call	__frameset
+	ld	hl, L___const.setup_tios_textio.routines
+	ld	de, 7
+	lea	bc, ix + -7
+	ld	(ix + -10), bc
+	push	de
+	push	hl
+	push	bc
+	call	_memcpy
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, (ix + -10)
+	push	hl
+	call	_textio_SetLibraryRoutines
+	ld	sp, ix
+	pop	ix
+	ret
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	private	_textio_os_SetCursorPos
+_textio_os_SetCursorPos:
+	call	__frameset0
+	ld	a, (ix + 6)
+	ld	l, (ix + 9)
+	ld	e, a
+	ld	(ix + 6), de
+	ld	(ix + 9), hl
+	pop	ix
+	jp	_os_SetCursorPos
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	private	_textio_os_GetGlyphWidth
+_textio_os_GetGlyphWidth:
+	call	__frameset0
+	ld	hl, 1
+	pop	ix
+	ret
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	public	_draw_buffer_contents
+_draw_buffer_contents:
+	ld	hl, -7
+	call	__frameset
+	ld	hl, (ix + 6)
+	ld	(ix + -6), hl
+	ld	hl, (ix + 9)
+	ld	(ix + -3), hl
+	or	a, a
+	sbc	hl, hl
+	push	hl
+	push	hl
+	call	_os_SetCursorPos
+	xor	a, a
+	ld	de, (ix + -3)
+	pop	hl
+	pop	hl
+	inc	de
+BB3_1:
+	ld	bc, 0
+	push	bc
+	pop	hl
+	ld	l, a
+	or	a, a
+	sbc	hl, de
+	push	bc
+	pop	hl
+	jq	nc, BB3_3
+	ld	bc, L_.str
+	push	bc
+	ld	(ix + -3), de
+	ld	(ix + -7), a
+	call	_os_PutStrFull
+	ld	a, (ix + -7)
+	ld	de, (ix + -3)
+	pop	hl
+	inc	a
+	jq	BB3_1
+BB3_3:
+	push	hl
+	push	hl
+	call	_os_SetCursorPos
+	pop	hl
+	pop	hl
+	ld	hl, (ix + -6)
+	ld	(ix + 6), hl
+	ld	sp, ix
+	pop	ix
+	jp	_os_PutStrFull
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	public	_input
+_input:
+	ld	hl, -51
+	call	__frameset
+	ld	l, 0
+	ld	(ix + -36), hl
+	ld	iy, 30
+	ld	bc, 0
+	lea	hl, ix + -30
+	ld	(ix + -42), hl
+	lea	de, ix + -33
+	ld	(ix + -51), de
+	push	iy
+	push	bc
+	push	hl
+	call	_memset
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, (ix + -42)
+	ld	(ix + -33), hl
+	push	hl
+	ld	hl, L_.str.2
+	push	hl
+	ld	hl, -327680
+	push	hl
+	call	_sprintf
+	pop	hl
+	pop	hl
+	pop	hl
+	call	_setup_tios_textio
+	ld	bc, 0
+	ld	de, (ix + -42)
+	ld	hl, 25
+	push	hl
+	pop	iy
+BB4_1:
+	ex	de, hl
+	ld	(ix + -39), bc
+	add	hl, bc
+	ld	(ix + -45), hl
+	push	iy
+	push	hl
+	call	_draw_buffer_contents
+	pop	hl
+	pop	hl
+	ld	hl, (ix + -45)
+	push	hl
+	call	_strlen
+	pop	de
+	ld	bc, 26
+	call	__idivu
+	push	hl
+	pop	de
+	ld	(ix + -48), de
+	ld	hl, (ix + -36)
+	push	hl
+	push	de
+	call	_os_SetCursorPos
+	pop	hl
+	pop	hl
+	ld	hl, (ix + -48)
+	ld	bc, 255
+	call	__iand
+	ld	de, 0
+	ld	bc, (ix + -36)
+	ld	e, c
+	push	de
+	push	hl
+	ld	hl, L_.str.3
+	push	hl
+	ld	hl, -327680
+	push	hl
+	call	_sprintf
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+BB4_2:
+	call	_kb_Scan
+	call	_os_EnableCursor
+	call	_kb_AnyKey
+	or	a, a
+	jq	z, BB4_2
+	ld	hl, -720868
+	push	de
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	ld	l, e
+	ld	h, d
+	pop	de
+	ld.sis	bc, 1
+	call	__sand
+	ld	a, l
+	ld	l, 1
+	xor	a, l
+	xor	a, l
+	bit	0, a
+	jq	nz, BB4_15
+	call	_textio_KeyToOffset
+	cp	a, 0
+	call	__setflag
+	jq	m, BB4_15
+	or	a, a
+	sbc	hl, hl
+	ex	de, hl
+	ld	e, a
+	ld	hl, L_.str.1
+	add	hl, de
+	ld	l, (hl)
+	ld	a, l
+	or	a, a
+	jq	z, BB4_15
+	ld	(ix + -48), l
+	ld	hl, (ix + -33)
+	push	hl
+	ld	hl, L_.str.4
+	push	hl
+	ld	hl, -327680
+	push	hl
+	call	_sprintf
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	a, (ix + -48)
+	ld	l, a
+	push	hl
+	ld	hl, (ix + -51)
+	push	hl
+	ld	hl, 4
+	push	hl
+	ld	hl, (ix + -42)
+	push	hl
+	call	_textio_WriteChar
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	or	a, a
+	jq	nz, BB4_12
+	ld	hl, (ix + -45)
+	push	hl
+	call	_strlen
+	pop	de
+	ld	de, 26
+	or	a, a
+	sbc	hl, de
+	ld	de, -327680
+	jq	c, BB4_13
+	ld	hl, (ix + -39)
+	inc	hl
+	ld	(ix + -39), hl
+	jq	BB4_14
+BB4_12:
+	ld	de, -327680
+	jq	BB4_14
+BB4_13:
+	ld	hl, (ix + -36)
+	inc	l
+	ld	(ix + -36), hl
+BB4_14:
+	ld	hl, (ix + -33)
+	push	hl
+	ld	hl, L_.str.4
+	push	hl
+	push	de
+	call	_sprintf
+	pop	hl
+	pop	hl
+	pop	hl
+BB4_15:
+	ld	iy, (ix + -42)
+	ld	bc, (ix + -39)
+	ld	hl, -720878
+	push	de
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	ld	l, e
+	ld	h, d
+	pop	de
+	ld	a, l
+	cp	a, 0
+	call	__setflag
+	jq	p, BB4_22
+	ld	de, (ix + -33)
+	lea	hl, iy + 0
+	or	a, a
+	sbc	hl, de
+	jq	nc, BB4_22
+	push	bc
+	pop	hl
+	ld	(ix + -39), bc
+	ld	bc, 1
+	or	a, a
+	sbc	hl, bc
+	call	__setflag
+	jq	m, BB4_24
+	lea	hl, iy + 0
+	ld	bc, (ix + -39)
+	add	hl, bc
+	push	hl
+	pop	bc
+	inc	bc
+	ex	de, hl
+	or	a, a
+	sbc	hl, bc
+	jq	nz, BB4_24
+	ld	hl, (ix + -39)
+	dec	hl
+	ld	(ix + -39), hl
+	ld	hl, 4
+	push	hl
+	ld	hl, (ix + -51)
+	push	hl
+	push	iy
+	call	_textio_DeleteChar
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	iy, (ix + -39)
+	jq	BB4_23
+BB4_22:
+	push	bc
+	pop	iy
+BB4_23:
+	ld	bc, (ix + -36)
+BB4_25:
+	ld	hl, -720866
+	push	de
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	ld	l, e
+	ld	h, d
+	pop	de
+	ld	a, l
+	bit	1, a
+	jq	z, BB4_26
+	ld	(ix + -36), bc
+	ld	bc, (ix + -33)
+	ld	de, (ix + -42)
+	push	de
+	pop	hl
+	or	a, a
+	sbc	hl, bc
+	jq	nc, BB4_33
+	ld	(ix + -39), iy
+	ex	de, hl
+	ld	de, (ix + -39)
+	add	hl, de
+	ex	de, hl
+	inc	de
+	ld	(ix + -39), bc
+	push	bc
+	pop	hl
+	or	a, a
+	sbc	hl, de
+	ld	a, 1
+	ld	c, a
+	jq	z, BB4_30
+	ld	c, 0
+BB4_30:
+	lea	hl, iy + 0
+	ld	de, 1
+	or	a, a
+	sbc	hl, de
+	call	__setflag
+	ld	(ix + -45), iy
+	jq	p, BB4_32
+	ld	a, 0
+BB4_32:
+	and	a, c
+	ld	e, a
+	push	de
+	pop	hl
+	ld	c, 23
+	call	__ishl
+	push	hl
+	pop	iy
+	add	iy, iy
+	sbc	hl, hl
+	push	hl
+	pop	bc
+	ld	iy, (ix + -45)
+	add	iy, bc
+	ld	l, 1
+	xor	a, l
+	ld	b, 7
+	call	__bshl
+	rlc	a
+	sbc	a, a
+	ld	l, a
+	ld	bc, (ix + -36)
+	ld	a, c
+	add	a, l
+	ld	c, a
+	ld	hl, (ix + -39)
+	dec	hl
+	ld	(ix + -33), hl
+BB4_26:
+	ld	(ix + -39), iy
+	jq	BB4_34
+BB4_33:
+	ld	(ix + -39), iy
+	ld	bc, (ix + -36)
+BB4_34:
+	ld	hl, -720866
+	push	de
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	ld	l, e
+	ld	h, d
+	pop	de
+	ld	a, l
+	bit	2, a
+	jq	z, BB4_41
+	ld	iy, (ix + -33)
+	ld	a, (iy)
+	or	a, a
+	jq	z, BB4_41
+	ld	hl, (ix + -42)
+	ld	de, (ix + -39)
+	add	hl, de
+	inc	iy
+	ld	(ix + -33), iy
+	ex	de, hl
+	ld	hl, 1
+	or	a, a
+	sbc	hl, de
+	push	hl
+	pop	de
+	add	iy, de
+	lea	hl, iy + 0
+	ld	de, 26
+	or	a, a
+	sbc	hl, de
+	jq	c, BB4_40
+	ld	(ix + -36), bc
+	ld	hl, (ix + -39)
+	inc	hl
+	ld	(ix + -39), hl
+	jq	BB4_42
+BB4_24:
+	ld	hl, 4
+	push	hl
+	ld	hl, (ix + -51)
+	push	hl
+	push	iy
+	call	_textio_DeleteChar
+	pop	de
+	pop	de
+	pop	de
+	ld	de, (ix + -36)
+	ld	a, e
+	sub	a, l
+	ld	c, a
+	ld	iy, (ix + -39)
+	jq	BB4_25
+BB4_40:
+	inc	c
+BB4_41:
+	ld	(ix + -36), bc
+BB4_42:
+	ld	hl, -720868
+	ld.sis	bc, 1
+	push	de
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	ld	l, e
+	ld	h, d
+	pop	de
+	call	__sand
+	ld	a, l
+	ld	l, 1
+	xor	a, l
+	xor	a, l
+	bit	0, a
+	jq	nz, BB4_45
+	ld	hl, 100
+	push	hl
+	call	_delay
+	pop	hl
+	ld	hl, 25
+	push	hl
+	pop	iy
+	ld	de, (ix + -42)
+	ld	bc, (ix + -39)
+	jq	BB4_1
+BB4_45:
+	ld	sp, ix
+	pop	ix
+	ret
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	public	_main
+_main:
+	ld	iy, -3145600
+	call	_os_ClrLCD
+	call	_os_HomeUp
+	call	_os_DrawStatusBar
+	jp	_input
+	section	.text,"ax",@progbits
+
+	section	.rodata,"a",@progbits
+	private	L___const.setup_tios_textio.routines
+L___const.setup_tios_textio.routines:
+	db	1
+	dl	_textio_os_SetCursorPos
+	dl	_textio_os_GetGlyphWidth
+
+	section	.rodata,"a",@progbits
+	private	L_.str
+L_.str:
+	db	" ",000o
+
+	section	.rodata,"a",@progbits
+	private	L_.str.1
+L_.str.1:
+	db	"",000o,000o,000o,000o,000o,000o,000o,000o,000o,000o,"""WRMH",000o,000o,"?[VQLG",000o,000o,":ZUPKFC",000o," YTOJEB",000o,000o,"XSNIDA",000o,000o,000o,000o,000o,000o,000o,000o,000o
+
+	section	.rodata,"a",@progbits
+	private	L_.str.2
+L_.str.2:
+	db	"buffer = 0x%6x",012o,000o
+
+	section	.rodata,"a",@progbits
+	private	L_.str.3
+L_.str.3:
+	db	"cursor_y = %d | cursor_x = %d",012o,000o
+
+	section	.rodata,"a",@progbits
+	private	L_.str.4
+L_.str.4:
+	db	"curr_char_ptr = 0x%6x",012o,000o
+
+	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project c250ab19ab6e6fafd97dee745a52e725762c2fa5)"
+	extern	_memset
+	extern	__Unwind_SjLj_Register
+	extern	__frameset
+	extern	_kb_AnyKey
+	extern	_sprintf
+	extern	_kb_Scan
+	extern	__sand
+	extern	_os_DrawStatusBar
+	extern	_os_ClrLCD
+	extern	_memcpy
+	extern	__ishl
+	extern	_strlen
+	extern	__idivu
+	extern	__setflag
+	extern	__Unwind_SjLj_Unregister
+	extern	__iand
+	extern	_os_PutStrFull
+	extern	_os_EnableCursor
+	extern	_textio_SetLibraryRoutines
+	extern	__bshl
+	extern	_textio_DeleteChar
+	extern	_textio_KeyToOffset
+	extern	_delay
+	extern	_textio_WriteChar
+	extern	__frameset0
+	extern	_os_HomeUp
+	extern	_os_SetCursorPos

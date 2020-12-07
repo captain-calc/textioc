@@ -159,178 +159,211 @@ textio_GetBufferSize:
 textio_WriteChar:
 ; Arguments:
 ;   arg0 = pointer to buffer
-;   arg1 = character to insert
+;   arg1 = buffer size
+;   arg2 = address of curr_char_ptr
+;   arg3 = character to insert
 ; Returns:
 ;   A == 0 if character was written; A == 1, otherwise
 ; Destroys:
-;   ...
+;   BC, DE, and HL
 
 	ld	hl,arg0
 	add	hl,sp
-	ld	bc,(hl)			; BC -> buffer
+	ld	bc,(hl)		; BC -> buffer
 	inc	hl
 	inc	hl
 	inc	hl
-	ld	e,(hl)			; E = character
+	ld	de,(hl)		; DE = buffer size
+	inc	hl
+	inc	hl
+	inc	hl
+	push	hl		; Save the argument pointer for later
+	ld	hl,(hl)
+	ld	hl,(hl)		; HL -> curr_char_ptr
 
-; If the curr_char_ptr == end of buffer, return
-	ld	hl,(_BufferSize)
-	add	hl,bc			; HL -> end of buffer
-	push	de
-	ld	de,(_CurrCharPtr)
+; If curr_char_ptr == end of buffer, return
+	ex	de,hl		; After exchange, HL = buffer size | DE -> curr_char_ptr
+	add	hl,bc
+	dec	hl		; HL = end of buffer
 	xor	a,a
 	sbc	hl,de
-	pop	hl			; L = character
 	ld	a,1
+	pop	hl		; HL -> arg2
 	ret	z
 
-; Verify the *curr_char_ptr == NULL and insert char if true
-; Also insert char if OVERWRITE_MODE is on
+; If *curr_char_ptr == NULL, write char and return
 	ex	de,hl
-	xor	a,a
+	xor	a,a		; DE -> arg2
 	cp	a,(hl)
 	jr	z,.writeChar
+
+; If OVERWRITE_MODE is on, write char
 	ld	a,(_OverwriteMode)
 	or	a,a
 	jr	nz,.writeChar
 
-; If not, shift the characters in front of the curr_char_ptr
-; to the right, if possible
-	push	hl
+; If neither test above returns true, shift chars right by one starting at curr_char_ptr
+; If util.ShiftCharsRight returns an error (A == 1), return
 	push	de
-	push	bc
+
+; HL -> start of string to shift
+; DE -> buffer
+; BC = buffer length
+	push	hl		; HL -> start of string to shift
+	push	hl
+	push	bc		; BC -> buffer
+	ld	hl,arg1 + 12	; Four stack locals
+	add	hl,sp
+	ld	bc,(hl)
+	pop	hl
 	pop	de
 	call	util.ShiftCharsRight
-	pop	de
-	pop	hl
-
-; If the shift failed (A == 1), return
+	pop	hl		; HL -> curr_char_ptr
+	pop	de		; DE -> arg2
 	or	a,a
 	ret	nz
 
-; Else if the shift succeeded or the *curr_char_ptr == NULL,
-; insert the character and increment the curr_char_ptr
 .writeChar:
-	ld	(hl),e
+; Write char and increment the curr_char_ptr
+; DE -> curr_char_ptr and HL -> arg2
+	ex	de,hl
 	inc	hl
-	ld	(_CurrCharPtr),hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)
+	ld	a,l		; A = char to write
+	ex	de,hl
+	ld	(hl),a
+	inc	hl
+	ex	de,hl
+	ld	hl,arg2
+	add	hl,sp
+	ld	hl,(hl)		; HL = address of curr_char_ptr
+	ld	(hl),de
+	xor	a,a
 	ret
 
 
 ;-------------------------------------------------------------
 util.ShiftCharsRight:
 ; Arguments:
-;   HL -> start of string to shift
-;   DE -> buffer
+;   DE -> start of string to shift
+;   HL -> buffer
+;   BC = buffer length
 ; Returns:
 ;   A == 0, if successful; A == 1, if buffer is full
 ; Destroys:
 ;   BC, DE, and HL
 
-    ex  de,hl           ; After exchange: DE = (_CurrCharPtr)
-    ld  bc,(_BufferSize)
-    add hl,bc
-    xor a,a
-    cp  a,(hl)
-    ld  a,1
-    ret nz          ; Returning now means the buffer is full
-
-    push    de
-    pop hl          ; HL = (_CurrCharPtr)
-    xor a,a
-
-; This should be replaced by a binary search. A binary search will
-; perform much faster on large buffers.
-    cpir            ; BC = (_BufferSize)
-                    ; This will repeat until BC == 0 or (HL) == NULL
+; If last char in buffer != NULL, return error
+	add	hl,bc
 	dec	hl
+	xor	a,a
+	cp	a,(hl)
+	ld	a,1
+	ret	nz
 
-; Now, we must subtract DE from HL to find out how many characters we need to shift
-    push    hl
-    push    hl
-    xor a,a
-    sbc hl,de
-    push    hl
-    pop bc
-    pop de          ; DE -> first NULL character after string to shift
-    pop hl
+; Get number of chars to shift
+	push	de
+	pop	hl
+	xor	a,a		; HL -> start of string to shift
+	cpir
+	dec	hl		; HL -> last non-NULL char in buffer
+
+; Shift the chars
+	push	hl
+	push	hl
+	xor	a,a
+	sbc	hl,de		; HL = number of chars to shift
+	push	hl
+	pop	bc
+	pop	de
+	pop	hl
 	dec	hl
-    lddr
-	inc	hl
-    ret
+	lddr
+	ret
 
 
 ;-------------------------------------------------------------
 textio_DeleteChar:
 ; Arguments:
 ;   arg0 = pointer to buffer
+;   arg1 = address of curr_char_ptr
+;   arg2 = buffer size
 ; Returns:
-;   HL = width of target char if successful; HL = 0 if curr_char_ptr == buffer
+;   HL width of deleted char if successful; HL == 0 if curr_char_ptr == buffer
 ; Destroys:
 ;   A, BC, and DE
 
+	mOpenDebugger
 	ld	hl,arg0
 	add	hl,sp
-	ld	de,(hl)
-	ld	hl,(_CurrCharPtr)
+	ld	bc,(hl)		; BC -> buffer
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)
+	ld	hl,(hl)		; HL = curr_char_ptr
 
 ; If curr_char_ptr == buffer, return
 	push	hl
 	xor	a,a
-	sbc	hl,de
-	pop	bc
+	sbc	hl,bc
+	pop	de		; DE = curr_char_ptr
 	ld	hl,0
 	ret	z
 
 ; Decrement the curr_char_ptr
-	push	bc
-	pop	hl
-	dec	hl
-	ld	(_CurrCharPtr),hl
-	push	de
-	
+	ld	hl,arg1
+	add	hl,sp
+	ld	hl,(hl)
+	dec	de
+	ld	(hl),de
+
 ; Get the width of the target char
+	ex	de,hl
+	push	bc		; BC -> buffer
 	ld	bc,(hl)
 	push	hl
 	push	bc
 	call	util.GetCharWidth
 	pop	bc
-	ex	de,hl
-	pop	hl
-	pop	bc			; BC -> buffer
+	ex	de,hl		; After exchange: DE = width of char
+	pop	hl		; HL = modified curr_char_ptr
+	pop	bc		; BC -> buffer
 
-; Set target char to NULL
+; Delete char
 	xor	a,a
 	ld	(hl),a
 
-; If the char after the target char == NULL or
-; OVERWRITE_MODE is on, return
+; If char after deleted char == NULL, return
 	inc	hl
 	cp	a,(hl)
-	ex	de,hl
+	ex	de,hl		; Put width of deleted char in HL
 	ret	z
+
+; If OVERWRITE_MODE is on, return
 	ld	a,(_OverwriteMode)
 	or	a,a
 	ret	nz
 
-; Else, shift all characters in after the deleted
-; character left
-	ex	de,hl
-	push	de
+; Else, shift all chars to the right of the deleted char left by one
+; When this executes: DE = modified curr_char_ptr, BC -> buffer
+	push	hl		; HL = width of deleted char
 	push	bc
-	pop	de			; DE -> buffer
-	pop	bc			; BC = width of target char
-	dec	hl
+	ld	hl,arg2 + 6	; Two stack local
+	add	hl,sp
+	ld	bc,(hl)		; BC = buffer size
+	pop	hl		; HL -> buffer
 	ex	de,hl
-	push	bc
-	ld	bc,(_BufferSize)
 	add	hl,bc
+	push	hl
 	xor	a,a
-	sbc	hl,de			; DE -> target char
+	sbc	hl,de
+	dec	hl		; HL = number of chars to shift
 	push	hl
 	pop	bc
-	push	de
-	pop	hl
+	pop	hl		; HL -> modified curr_char_ptr + 1
 	inc	hl
 	ldir
 	pop	hl

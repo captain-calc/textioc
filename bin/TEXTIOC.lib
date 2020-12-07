@@ -1,0 +1,20 @@
+library	"TEXTIOC", 1
+	export	textio_SetLibraryRoutines ; 0
+	export	textio_SetCurrCharPtr ; 3
+	export	textio_GetCurrCharPtr ; 6
+	export	textio_SetBufferSize ; 9
+	export	textio_GetBufferSize ; 12
+	export	textio_WriteChar ; 15
+	export	textio_DeleteChar ; 18
+	export	textio_Clear ; 21
+	export	textio_KeyToOffset ; 24
+	export	textio_SetPrintFormat ; 27
+	export	textio_GetPrintFormat ; 30
+	export	textio_SetNewlineCode ; 33
+	export	textio_GetNewlineCode ; 36
+	export	textio_SetTabWidth ; 39
+	export	textio_GetTabWidth ; 42
+	export	textio_GetCharWidth ; 45
+	export	textio_GetLineWidth ; 48
+	export	textio_GetStringWidthL ; 51
+	export	textio_GetLinePtr ; 54
