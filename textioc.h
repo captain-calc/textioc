@@ -34,17 +34,12 @@ extern "C" {
 */
 typedef struct {
 	uint8_t library_version;
-	void (*set_text_position)(uint24_t, uint8_t);
 	uint24_t (*get_char_width)(char);
 } textio_library_routines_t;
 
 /**
  * Function wrappers for homescreen.
 */
-static void textio_os_SetCursorPos(uint24_t xPos, uint8_t yPos) {
-	os_SetCursorPos((uint8_t)xPos, yPos);
-	return;
-}
 
 /* On the homescreen, the font is monospaced. */
 static uint24_t textio_os_GetGlyphWidth(char codepoint) {
@@ -54,24 +49,7 @@ static uint24_t textio_os_GetGlyphWidth(char codepoint) {
 /**
  * Function wrappers for FontLibC.
 */
-static void textio_fontlib_SetCursorPosition(uint24_t xPos, uint8_t yPos) {
-	fontlib_SetCursorPosition((unsigned int)xPos, yPos);
-	return;
-}
-/*
-static uint24_t textio_fontlib_GetCursorX(void) {
-	return (uint24_t)fontlib_GetCursorX();
-}
 
-static uint24_t textio_fontlib_GetCursorY(void) {
-	return (uint24_t)fontlib_GetCursorY();
-}
-
-static void textio_fontlib_DrawGlyph(char codepoint) {
-	fontlib_DrawGlyph((uint8_t)codepoint);
-	return;
-}
-*/
 static uint24_t textio_fontlib_GetGlyphWidth(char codepoint) {
 	return (uint24_t)fontlib_GetGlyphWidth(codepoint);
 }
@@ -79,24 +57,7 @@ static uint24_t textio_fontlib_GetGlyphWidth(char codepoint) {
 /**
  * Function wrappers for GraphX.
  */
-static void textio_gfx_SetTextXY(uint24_t xPos, uint8_t yPos) {
-	gfx_SetTextXY((int)xPos, (int)yPos);
-	return;
-}
-/*
-static uint24_t textio_gfx_GetTextX(void) {
-	return (uint24_t)gfx_GetTextX();
-}
 
-static uint24_t textio_gfx_GetTextY(void) {
-	return (uint24_t)gfx_GetTextY();
-}
-
-static void textio_gfx_PrintChar(char codepoint) {
-	gfx_PrintChar((const char)codepoint);
-	return;
-}
-*/
 static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 	return (uint24_t)gfx_GetCharWidth((const char)codepoint);
 }
@@ -106,7 +67,6 @@ static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 */
 #define TEXTIO_TIOS_ROUTINES { \
 				LIBRARY_VERSION, \
-				textio_os_SetCursorPos, \
 				textio_os_GetGlyphWidth \
 				};
 
@@ -115,7 +75,6 @@ static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 */
 #define TEXTIO_FONTLIB_ROUTINES { \
 				LIBRARY_VERSION, \
-				textio_fontlib_SetCursorPosition, \
 				textio_fontlib_GetGlyphWidth \
 				};
 
@@ -124,7 +83,6 @@ static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 */
 #define TEXTIO_GRAPHX_ROUTINES { \
 				LIBRARY_VERSION, \
-				textio_gfx_SetTextXY, \
 				textio_gfx_GetCharWidth \
 				};
 
@@ -145,53 +103,106 @@ static uint24_t textio_gfx_GetCharWidth(char codepoint) {
 void textio_SetLibraryRoutines(textio_library_routines_t *ptr);
 
 /**
- * Sets the current character pointer for textio_WriteChar and textio_DeleteChar.
- *
- * @param ptr Pointer to current character
-*/
-void textio_SetCurrCharPtr(char *ptr);
-
-/**
- * Gets the current character pointer.
- *
- * @return Pointer to current character
-*/
-char *textio_GetCurrCharPtr(void);
-
-/**
- * Sets the buffer size for textio_WriteChar and textio_DeleteChar.
- *
- * @param size Size of buffer
-*/
-void textio_SetBufferSize(uint24_t size);
-
-/**
- * Gets the buffer size.
- *
- * @return Size of buffer
-*/
-uint24_t textio_GetBufferSize(void);
-
-/**
- * Writes a character at the curr_char_ptr. The character is inserted at
- * curr_char_ptr if OVERWRITE_MODE is off. If OVERWRITE_MODE is on, any
- * character at curr_char_ptr is overwritten.
+ * Writes CHARACTER at LOCATION in BUFFER. If any pre-existing characters in
+ * BUFFER block the insertion, they are shifted right.
  *
  * @param buffer Pointer to the text buffer
+ * @param buffer_size Size of buffer (not including null terminator)
  * @param character Character to write
- * @return 0 if character was inserted; 1, otherwise
+ * @param location Pointer to where character should be written
+ * @return 0 if character was inserted; 1, if character could not be written
 */
-uint8_t textio_WriteChar(char *buffer, char character);
+bool textio_InsertChar(const char *buffer, uint24_t buffer_size, const char character, const char *location);
 
 /**
- * Deletes (sets to NULL) the character at the curr_char_ptr. If OVERWRITE_MODE
- * is off, any characters to the right of the deleted character in the buffer are
- * shifted left. No shift occurs if the OVERWRITE_MODE is on.
+ * Write NUM_CHARS of STRING at LOCATION in BUFFER. If any pre-existing characters in
+ * BUFFER block the insertion, they are shifted right.
  *
- * @param buffer Pointer to text buffer
- * @return Width of the deleted character
+ * @param buffer Pointer to the text buffer
+ * @param buffer_size Size of buffer (not including null terminator)
+ * @param string String to write
+ * @param location Pointer to where string should be written
+ * @param length Number of characters to write
+ * @return 0 if string was inserted; 1, if string could not be written
 */
-uint24_t textio_DeleteChar(char *buffer);
+bool textio_InsertString(const char *buffer, uint24_t buffer_size, const char *string, const char *location, uint24_t length);
+
+/**
+ * Writes CHARACTER at LOCATION.
+ *
+ * @note This function is not bounds-checked. The programmer must ensure that buffer
+ * overflows are prevented.
+ *
+ * @param location Pointer to where character should be written
+ * @param character Character to write
+*/
+void textio_WriteChar(const char *location, const char character);
+
+/**
+ * Write NUM_CHARS of STRING at LOCATION.
+ *
+ * @note This function is not bounds-checked. The programmer must ensure that buffer
+ * overflows are prevented.
+ *
+ * @param location Pointer to where string should be written
+ * @param length Number of characters to write
+ * @param string String to write
+*/
+void textio_WriteString(const char *location, uint24_t length, const char *string);
+
+/**
+ * Deletes LENGTH bytes at STRING in BUFFER. Any non-NULL bytes to the right of the
+ * deleted character are shifted left.
+ *
+ * @param buffer Pointer to buffer
+ * @param buffer_size Size of buffer (not including null terminator)
+ * @param character Pointer to character
+ * @return Width of deleted character
+*/
+uint24_t textio_ShiftDeleteChar(const char *buffer, uint24_t buffer_size, const char *character);
+
+/**
+ * Deletes LENGTH bytes at STRING in BUFFER. Any non-NULL bytes to the right of the
+ * deleted string are shifted left.
+ *
+ * @param buffer Pointer to buffer
+ * @param buffer_size Size of buffer (not including null terminator)
+ * @param string Pointer to string
+ * @param length Number of characters to delete
+ * @return Width of deleted string
+*/
+uint24_t textio_ShiftDeleteString(const char *buffer, uint24_t buffer_size, const char *string, uint24_t length);
+
+/**
+ * Deletes the byte at CHARACTER.
+ *
+ * @param character Pointer to character
+*/
+void textio_DeleteChar(const char *character);
+
+/**
+ * Deletes LENGTH bytes at STRING.
+ *
+ * @param string Pointer to string
+ * @param length Number of characters to delete
+*/
+void textio_DeleteString(const char *string, uint24_t length);
+
+/**
+ * Shifts the null-terminated STRING left by DISTANCE.
+ *
+ * @param string String to shift
+ * @param distance Distance (in bytes) to shift string
+*/
+void textio_ShiftStringLeft(const char *string, uint24_t distance);
+
+/**
+ * Shifts null-terminated STRING right by DISTANCE.
+ *
+ * @param string String to shift
+ * @param distance Distance (in bytes) to shift string
+*/
+void textio_ShiftStringRight(const char *string, uint24_t distance);
 
 /**
  * Deletes (sets to NULL) num_bytes characters starting at ptr. If OVERWRITE_MODE is
@@ -201,7 +212,7 @@ uint24_t textio_DeleteChar(char *buffer);
  * @param buffer Pointer to text buffer
  * @param num_bytes Number of bytes to delete
 */
-uint24_t textio_Clear(char *buffer, char *offset, uint16_t num_bytes);
+uint24_t textio_Clear(char *buffer, char *offset, uint24_t num_bytes, uint24_t buffer_size);
 
 /**
  * Converts a keypress into an offset for accessing characters in a keymap.

@@ -1,4 +1,4 @@
-### Auto-Scrolling Input Demo
+### Text Input Demo
 
 
 ---

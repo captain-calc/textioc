@@ -14,13 +14,16 @@
 	
 	export textio_SetLibraryRoutines
     
-	export textio_SetCurrCharPtr
-	export textio_GetCurrCharPtr
-	export textio_SetBufferSize
-	export textio_GetBufferSize
-    export textio_WriteChar
+	export textio_InsertChar
+	export textio_InsertString
+	export textio_WriteChar
+	export textio_WriteString
+	export textio_ShiftDeleteChar
+	export textio_ShiftDeleteString
 	export textio_DeleteChar
-	export textio_Clear
+	export textio_DeleteString
+	export textio_ShiftStringLeft
+	export textio_ShiftStringRight
 	export textio_KeyToOffset
     
 	export textio_SetPrintFormat
@@ -31,7 +34,7 @@
 	export textio_GetTabWidth
 	export textio_GetCharWidth
 	export textio_GetLineWidth
-    export textio_GetStringWidthL
+	export textio_GetStringWidthL
 	export textio_GetLinePtr
 
 ;-------------------------------------------------------------
@@ -41,6 +44,7 @@
 	arg1	:= 6
 	arg2	:= 9
 	arg3	:= 12
+	arg4	:= 15
 
 	null	:= $00
 	tab	:= $09
@@ -79,8 +83,6 @@ textio_SetLibraryRoutines:
 	ld	a,(iy)
 	ld	(_LibraryVersion),a
 	ld	hl,(iy + 1)
-	ld	(_SetTextPosition),hl
-	ld	hl,(iy + 4)
 	ld	(_GetCharWidth),hl
 ; If a second version is released that uses more external functions,
 ; use the following to supply only those functions that the library
@@ -98,381 +100,495 @@ textio_SetLibraryRoutines:
 ;=============================================================;
 
 
-textio_SetCurrCharPtr:
-; Arguments:
-;   arg0 = pointer to current character
+textio_InsertChar:
+; Arguements:
+;   arg0 -> buffer
+;   arg1 = buffer size
+;   arg2 = character
+;   arg3 -> write location
 ; Returns:
-;   None
+;   A == 0, if successful; A == 1, if the char could not fit
 ; Destroys:
-;   HL
+;   BC, DE, HL
 
-	ld	hl,arg0
+	ld	a,0
+.char := $ - 1
+
+	ld	hl,arg2
 	add	hl,sp
-	ld	hl,(hl)
-	ld	(_CurrCharPtr),hl
-	ret
+	ld	a,(hl)
+	ld	(.char),a
+	ld	de,.char
+	ld	(hl),de		; Load the address of the char into the stack
 
-
-;-------------------------------------------------------------
-textio_GetCurrCharPtr:
-; Arguments:
-;   None
-; Returns:
-;   HL = current character pointer
-; Destroys:
-;   None
-
-	ld	hl,(_CurrCharPtr)
-	ret
-
-
-;-------------------------------------------------------------
-textio_SetBufferSize:
-; Arguments:
-;   arg0 = buffer size
-; Returns:
-;   None
-; Destroys:
-;   HL
-
-	ld	hl,arg0
+	ld	hl,1
+	push	hl
+	ld	hl,arg4 + 3	; Plus 3 for the stack pointer, and arg4 because HL is decremented and then accessed
 	add	hl,sp
-	ld	hl,(hl)
-	ld	(_BufferSize),hl
+	ld	a,4
+
+; Push all of the parameters to this function onto the stack
+.loop:
+	dec	hl
+	dec	hl
+	dec	hl
+	ld	de,(hl)
+	push	de
+	dec	a
+	or	a,a
+	jr	nz,.loop
+
+	call	textio_InsertString
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
 	ret
 
 
 ;-------------------------------------------------------------
-textio_GetBufferSize:
+textio_InsertString:
 ; Arguments:
-;   None
+;   arg0 -> buffer
+;   arg1 = buffer size
+;   arg2 -> string
+;   arg3 -> write location
+;   arg4 = length of string
 ; Returns:
-;   HL = buffer size
+;   A == 0, if successful; A == 1, if the string could not fit
 ; Destroys:
-;   HL
+;   BC, DE, HL
 
-	ld	hl,(_BufferSize)
+; Find the length of the string at the write location
+	ld	hl,arg2
+	add	hl,sp
+	ld	de,(hl)		; DE -> argument string
+	push	de
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)		; HL -> write location
+	push	hl
+
+	push	hl
+	ld	bc,0		; BC will overflow
+	xor	a,a
+	cpir
+	pop	de		; DE -> write location
+	push	hl
+	xor	a,a
+	sbc	hl,de
+	dec	hl		; HL = length of string at write location (could be 0)
+	push	hl
+
+; Find how many NULL bytes are in the buffer
+; On stack:
+;    Length of string at write location
+;    Pointer to first NULL byte found
+;    Pointer to write location
+;    Pointer to argument string
+	ld	hl,arg0 + 12		; Four stack locals
+	add	hl,sp
+	ld	de,(hl)		; DE -> buffer
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	bc,(hl)		; BC = buffer size
+	ex	de,hl
+	add	hl,bc		; HL -> NULL terminator of buffer
+	pop	bc		; BC = length of string at write location
+	pop	de		; DE -> first NULL byte found
+	xor	a,a
+	sbc	hl,de
+	inc	hl		; HL = number of NULL bytes at end of buffer
+
+; If the number of NULL bytes < length of argument string. return error
+	ex	de,hl
+	ld	hl,arg4 + 6		; Two stack locals
+	add	hl,sp
+	ld	hl,(hl)		; HL = length of argument string
+	push	hl
+	inc	de		; Increment the number of NULL bytes, so if HL == 
+	sbc	hl,de		; the previous value of DE, the carry flag will be set
+	pop	hl
+	jr	c,.testWriteLoc
+
+	ld	a,1
+	pop	hl		; Discard stack locals
+	pop	hl
+	ret
+
+.testWriteLoc:
+	dec	de		; Restore the true number of NULL bytes
+; If length of string at write location == 0, write string and return
+	push	hl
+	ld	hl,0
+	xor	a,a
+	sbc	hl,bc
+	pop	hl		; HL = length of argument string
+	jr	c,.shiftPrep
+
+; The state of the registers here and at the end of the next codeblock are the same,
+; so the same process can be used to load the registers with the proper variables
+; before shifting/writing the parameter string.
+	push	hl
+	pop	bc
+	pop	de		; DE -> write location
+	pop	hl		; HL -> argument string
+	jr	.writeString
+
+.shiftPrep:
+; Else, if length of the argument string is greater than the number of NULL bytes,
+; return error
+	push	hl
+	inc	de		; Increment DE so if HL == previous value of DE, the carry flag will be set
+	xor	a,a
+	sbc	hl,de
+	pop	bc		; BC = length of argument string
+	ld	a,1
+	pop	de		; DE -> write location
+	pop	hl		; HL -> argument string
+	ret nc
+
+; Else, shift the string at the write location by the length of the parameter string
+	push	hl
+	push	de
+	push	bc
+	ex	de,hl
+	call	util.ShiftStringRight
+	pop	bc
+	pop	de
+	pop	hl
+
+.writeString:
+	ldir
+	xor	a,a
 	ret
 
 
 ;-------------------------------------------------------------
 textio_WriteChar:
 ; Arguments:
-;   arg0 = pointer to buffer
-;   arg1 = buffer size
-;   arg2 = address of curr_char_ptr
-;   arg3 = character to insert
+;   arg0 -> write location
+;   arg1 = character
 ; Returns:
-;   A == 0 if character was written; A == 1, otherwise
+;   None
 ; Destroys:
-;   BC, DE, and HL
+;   BC, DE, HL
 
-	ld	hl,arg0
-	add	hl,sp
-	ld	bc,(hl)		; BC -> buffer
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	de,(hl)		; DE = buffer size
-	inc	hl
-	inc	hl
-	inc	hl
-	push	hl		; Save the argument pointer for later
-	ld	hl,(hl)
-	ld	hl,(hl)		; HL -> curr_char_ptr
-
-; If curr_char_ptr == end of buffer, return
-	ex	de,hl		; After exchange, HL = buffer size | DE -> curr_char_ptr
-	add	hl,bc
-	dec	hl		; HL = end of buffer
-	xor	a,a
-	sbc	hl,de
-	ld	a,1
-	pop	hl		; HL -> arg2
-	ret	z
-
-; If *curr_char_ptr == NULL, write char and return
-	ex	de,hl
-	xor	a,a		; DE -> arg2
-	cp	a,(hl)
-	jr	z,.writeChar
-
-; If OVERWRITE_MODE is on, write char
-	ld	a,(_OverwriteMode)
-	or	a,a
-	jr	nz,.writeChar
-
-; If neither test above returns true, shift chars right by one starting at curr_char_ptr
-; If util.ShiftCharsRight returns an error (A == 1), return
-	push	de
-
-; HL -> start of string to shift
-; DE -> buffer
-; BC = buffer length
-	push	hl		; HL -> start of string to shift
-	push	hl
-	push	bc		; BC -> buffer
-	ld	hl,arg1 + 12	; Four stack locals
-	add	hl,sp
-	ld	bc,(hl)
-	pop	hl
 	pop	de
-	call	util.ShiftCharsRight
-	pop	hl		; HL -> curr_char_ptr
-	pop	de		; DE -> arg2
-	or	a,a
-	ret	nz
-
-.writeChar:
-; Write char and increment the curr_char_ptr
-; DE -> curr_char_ptr and HL -> arg2
-	ex	de,hl
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	hl,(hl)
-	ld	a,l		; A = char to write
-	ex	de,hl
+	pop	hl
+	pop	bc
+	push	bc
+	push	hl
+	push	de
+	ld	a,c
 	ld	(hl),a
-	inc	hl
-	ex	de,hl
-	ld	hl,arg2
-	add	hl,sp
-	ld	hl,(hl)		; HL = address of curr_char_ptr
-	ld	(hl),de
-	xor	a,a
 	ret
 
 
 ;-------------------------------------------------------------
-util.ShiftCharsRight:
+textio_WriteString:
 ; Arguments:
-;   DE -> start of string to shift
-;   HL -> buffer
-;   BC = buffer length
+;   arg0 -> write location
+;   arg1 = number of chars to write
+;   arg2 -> string
 ; Returns:
-;   A == 0, if successful; A == 1, if buffer is full
+;   None
 ; Destroys:
-;   BC, DE, and HL
+;   BC, DE, HL
 
-; If last char in buffer != NULL, return error
-	add	hl,bc
+	ld	hl,arg0
+	add	hl,sp
+	ld	de,(hl)
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	bc,(hl)
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)
+	ldir
+	ret
+
+
+;-------------------------------------------------------------
+textio_ShiftDeleteChar:
+; Arguments:
+;  arg0 -> buffer
+;  arg1 = buffer size
+;  arg2 -> string to delete
+; Returns:
+;  HL = width of character deleted; HL == 0 if delete failed
+; Destroys:
+;  A, BC, DE
+
+	ld	hl,1
+	push	hl
+	ld	hl,arg2 + 3		; One stack local
+	add	hl,sp
+	ld	a,3
+.loop:
+	ld	de,(hl)
+	push	de
 	dec	hl
+	dec	hl
+	dec	hl
+	dec	a
+	or	a
+	jr	nz,.loop
+	call	textio_ShiftDeleteString
+	pop	de
+	pop	de
+	pop	de
+	pop	de
+	ret
+
+
+;-------------------------------------------------------------
+textio_ShiftDeleteString:
+; Arguments:
+;   arg0 -> buffer
+;   arg1 = buffer size
+;   arg2 -> string to delete
+;   arg3 = length of string
+; Returns:
+;   HL = width of string deleted; HL == 0 if delete failed
+; Destroys:
+;   A, BC, DE
+
+	ld	hl,arg0
+	add	hl,sp
+	ld	de,(hl)		; DE -> buffer
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	bc,(hl)		; BC = buffer size
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)		; HL -> string to delete
+
+; If character after HL == NULL, delete the character at HL and return
+	inc	hl
 	xor	a,a
 	cp	a,(hl)
-	ld	a,1
-	ret	nz
-
-; Get number of chars to shift
+	dec	hl
+	jr	nz,.isDeleteValid
+	ex	de,hl
+	sbc	hl,hl
+	ex	de,hl
+	ld	de,(hl)
+	ld	(hl),a
 	push	de
-	pop	hl
-	xor	a,a		; HL -> start of string to shift
-	cpir
-	dec	hl		; HL -> last non-NULL char in buffer
+	call	textio_GetCharWidth
+	pop	de
+	ret
 
-; Shift the chars
-	push	hl
+.isDeleteValid:
+; If the length of the string + delete location > end of buffer, return
+	ex	de,hl
+	add	hl,bc		; HL -> NULL terminator of buffer
+	xor	a,a
+	sbc	hl,de		; HL = number of bytes between delete location and end of buffer
+	push	de		; DE -> string to delete
+	ex	de,hl
+	ld	hl,arg3 + 3		; One stack local
+	add	hl,sp
+	ld	hl,(hl)
 	push	hl
 	xor	a,a
-	sbc	hl,de		; HL = number of chars to shift
+	sbc	hl,de
+	pop	bc		; BC = length of string
+	pop	de		; DE -> string to delete
+	jr	c,.getStrWidth
+	sbc	hl,hl
+	ret
+
+.getStrWidth:
+; Get width of string to be deleted
+	push	bc
+	push	de
+	call	textio_GetStringWidthL
+	pop	de
+	pop	bc
+
+; HL should point to the first character of the string that will be
+; shifted left. Get the length of this string and store to BC
+	push	hl		; HL = width of string to be deleted
+	push	de
+	ex	de,hl
+	add	hl,bc		; HL -> first char of string to be shifted left
+	push	hl
+	ld	bc,0
+	dec	bc		; BC will overflow
+	xor	a,a
+	cpir
+	pop	de
+	sbc	hl,de
+	dec	hl		; HL = length of string to be shifted left
+
+; Shift string left
 	push	hl
 	pop	bc
-	pop	de
-	pop	hl
+	pop	hl		; HL -> string to delete
+	ex	de,hl
+	ldir
+
+; Delete any non-NULL bytes at the end of the shifted string
+	ex	de,hl
 	dec	hl
-	lddr
+.loop:
+	inc	hl
+	cp	a,(hl)
+	ld	(hl),a
+	jr	nz,.loop
+
+	pop	hl
 	ret
 
 
 ;-------------------------------------------------------------
 textio_DeleteChar:
 ; Arguments:
-;   arg0 = pointer to buffer
-;   arg1 = address of curr_char_ptr
-;   arg2 = buffer size
+;   arg0 -> char to delete
 ; Returns:
-;   HL width of deleted char if successful; HL == 0 if curr_char_ptr == buffer
+;   None
 ; Destroys:
-;   A, BC, and DE
+;   A, DE, HL
 
-	mOpenDebugger
-	ld	hl,arg0
-	add	hl,sp
-	ld	bc,(hl)		; BC -> buffer
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	hl,(hl)
-	ld	hl,(hl)		; HL = curr_char_ptr
-
-; If curr_char_ptr == buffer, return
+	pop	de
+	pop	hl
 	push	hl
-	xor	a,a
-	sbc	hl,bc
-	pop	de		; DE = curr_char_ptr
-	ld	hl,0
-	ret	z
-
-; Decrement the curr_char_ptr
-	ld	hl,arg1
-	add	hl,sp
-	ld	hl,(hl)
-	dec	de
-	ld	(hl),de
-
-; Get the width of the target char
-	ex	de,hl
-	push	bc		; BC -> buffer
-	ld	bc,(hl)
-	push	hl
-	push	bc
-	call	util.GetCharWidth
-	pop	bc
-	ex	de,hl		; After exchange: DE = width of char
-	pop	hl		; HL = modified curr_char_ptr
-	pop	bc		; BC -> buffer
-
-; Delete char
+	push	de
 	xor	a,a
 	ld	(hl),a
-
-; If char after deleted char == NULL, return
-	inc	hl
-	cp	a,(hl)
-	ex	de,hl		; Put width of deleted char in HL
-	ret	z
-
-; If OVERWRITE_MODE is on, return
-	ld	a,(_OverwriteMode)
-	or	a,a
-	ret	nz
-
-; Else, shift all chars to the right of the deleted char left by one
-; When this executes: DE = modified curr_char_ptr, BC -> buffer
-	push	hl		; HL = width of deleted char
-	push	bc
-	ld	hl,arg2 + 6	; Two stack local
-	add	hl,sp
-	ld	bc,(hl)		; BC = buffer size
-	pop	hl		; HL -> buffer
-	ex	de,hl
-	add	hl,bc
-	push	hl
-	xor	a,a
-	sbc	hl,de
-	dec	hl		; HL = number of chars to shift
-	push	hl
-	pop	bc
-	pop	hl		; HL -> modified curr_char_ptr + 1
-	inc	hl
-	ldir
-	pop	hl
 	ret
 
 
 ;-------------------------------------------------------------
-textio_Clear:
+textio_DeleteString:
 ; Arguments:
-;   arg0 = pointer to buffer
-;   arg1 = pointer to start of string to delete
-;   arg2 = number of chars to delete
+;   arg0 -> string to delete
+;   arg1 = length of string
 ; Returns:
-;   HL = total width of deleted chars
+;   None
 ; Destroys:
-;   A, BC, and DE
+;   A, BC, DE, HL
 
-	ld	hl,0
-.bufferPtr := $ - 3
-	ld	hl,arg0
-	add	hl,sp
-	ld	bc,(hl)
-	ld	(.bufferPtr),bc
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	de,(hl)			; DE -> start of string to delete
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	bc,(hl)			; BC = number of chars to delete
-
-; Return if the number of chars to delete == 0
-	ld	hl,0
-	xor	a,a
-	sbc	hl,bc
-	ret	nc
-
-; Calculate the total width of the chars
-;    DE -> start of string to delete
-;    BC = number of chars to delete
-	ld	hl,0
-.totalWidth := $ - 3
-	push	bc
-	push	de
-	call	textio_GetStringWidthL
-	ld	(.totalWidth),hl
 	pop	de
+	pop	hl
 	pop	bc
-	push	bc			; Save both of these for later
+	push	bc
+	push	hl
 	push	de
 
-; Delete the chars
-.deleteChar:
-	xor	a,a
-	ld	(de),a
-	inc	de
-	dec	bc
+; Return if BC == 0
+	push	hl
 	ld	hl,0
+	xor	a,a
 	sbc	hl,bc
-	jr	c,.deleteChar
-	
-; Return if OVERWRITE_MODE is on
-	pop	de			; DE -> start of string to delete
-	pop	bc			; BC = number of chars to delete
-	ld	a,(_OverwriteMode)
-	or	a,a
-	jr	nz,.finish
+	pop	hl
+	ret	z
+.loop:
+	ld	(hl),a
+	inc	hl
+	dec	bc
+	push	hl
+	ld	hl,0
+	xor	a,a
+	sbc	hl,bc
+	pop	hl
+	jr	c,.loop
+	ret
+
+
+;-------------------------------------------------------------
+textio_ShiftStringLeft:
+; Arguments:
+;   arg0 -> string
+;   arg1 = shift distance
+; Returns:
+;   None
+; Destroys:
+;   BC, DE, HL
+
+	pop	de
+	pop	hl
+	pop	bc
+	push	bc
+	push	hl
 	push	de
-	
-; Shift all of the chars after the deleted string left
-;	Calculate how many chars are after the deleted string (buffer_ptr + buffer_size) - (arg1 + arg2)
+assert $= util.ShiftStringLeft
+
+
+util.ShiftStringLeft:
+; Arguments:
+;   HL -> string
+;   BC = shift distance
+; Returns:
+;   None
+; Destroys:
+;   BC, DE, HL
+
 	ex	de,hl
 	add	hl,bc
-	ex	de,hl			; After exchange: DE = arg1 + arg2
-	ld	hl,(.bufferPtr)
-	ld	bc,(_BufferSize)
-	add	hl,bc			; HL = buffer_ptr + buffer_size
-	sbc	hl,de			; HL = number of chars after the deleted string
-	push	hl
-	pop	bc			; BC = number of chars after the deleted string
-
-; If BC == 0, return
-	ld	hl,0
-	sbc	hl,bc
-	ex	de,hl			; After exchange: HL -> first char of string to shift
-	pop	de			; DE -> start of deleted string
-	jr	z,.finish
+	ex	de,hl
 	ldir
+	ret
 
-; At this point, DE -> char after the end of the shifted string
-; Delete any remaining chars after the shifted string
-; 	Loop until HL == buffer_ptr + buffer_size:
-; 		(HL) = 0
-	ld	hl,(.bufferPtr)
-	ld	bc,(_BufferSize)
-	add	hl,bc
-	xor	a,a
-	sbc	hl,de
+
+;-------------------------------------------------------------
+textio_ShiftStringRight:
+; Arguments:
+;   arg0 = pointer to start of string to shift
+;   arg1 = shift distance
+; Returns:
+;   None; shifts the string right by the shift distance
+; Destroys:
+;   A, BC, DE, HL
+
+	pop	de
+	pop	hl
+	pop	bc
+	push	bc
+	push	hl
+	push	de
+assert $= util.ShiftStringRight
+
+
+util.ShiftStringRight:
+; Arguments:
+;   HL -> string to shift
+;   BC = shift distance
+; Returns:
+;   None; shifts the string at HL right by BC bytes
+; Destroys:
+;   A, BC, DE, HL
+
+	push	bc
+	push	hl
 	ld	bc,0
-.eraseChar:
-	ld	(de),a
+	dec	bc		; BC will overflow
+	push	bc
+	xor	a,a
+	cpir
+	pop	hl
 	sbc	hl,bc
-	inc	de
-	dec	hl
-	jr	nz,.eraseChar
-
-.finish:
-	ld	hl,(.totalWidth)
+	dec	hl		; HL = length of string to shift
+	pop	de		; DE -> string to shift
+	ex	de,hl
+	add	hl,de
+	dec	hl		; HL -> last char of string to shift
+	ex	de,hl
+	push	hl
+	pop	bc		; BC = length of string to shift
+	pop	hl		; DE = shift distance
+	add	hl,de
+	ex	de,hl		; After exchange: DE -> location where last char of string to shift should go
+	lddr
 	ret
 
 
@@ -774,7 +890,6 @@ textio_GetLinePtr:
 
 	push	bc				; Save pointer to start of line
 	call	util.GetApproximateLinePtr
-	mOpenDebugger
 	pop	de
 	xor	a,a
 	cp	a,(hl)
@@ -872,8 +987,6 @@ util.GetApproximateLinePtr:
 	jr	.loop
 
 
-
-
 ;-------------------------------------------------------------
 ; Internal Library Functions
 ;-------------------------------------------------------------
@@ -892,34 +1005,6 @@ util.CallHL:
 	sbc	hl,bc
 	ret	z
 	jp	(hl)
-	ret
-
-
-;-------------------------------------------------------------
-util.SetTextPosition:
-; Sets the cursor position using the external function
-; whose address is in _SetTextPosition
-; Arguments:
-;   arg0 = xPos
-;   arg1 = yPos
-; Returns:
-;   None
-; Destroys:
-;   All
-
-	ld	hl,arg1
-	add	hl,sp
-	ld	de,(hl)
-	push	de
-	dec	hl
-	dec	hl
-	dec	hl
-	ld	de,(hl)
-	push	de
-	ld	hl,(_SetTextPosition)
-	call	util.CallHL
-	pop	hl
-	pop	hl
 	ret
 
 
@@ -953,17 +1038,7 @@ _LibraryVersion:
 	db	1
 
 ; Pointers for external library function implementations
-_SetTextPosition:
-	dl	0
 _GetCharWidth:
-	dl	0
-
-; Data for input functions
-_OverwriteMode:
-	db	0
-_BufferSize:
-    dl  0
-_CurrCharPtr:
 	dl	0
 
 ; Data for text output functions

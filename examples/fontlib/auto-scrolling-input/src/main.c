@@ -1,15 +1,25 @@
+#include <fontlibc.h>
 #include <graphx.h>
 #include <keypadc.h>
 #include <tice.h>
 #include <textioc.h>
 
+#include "fonts/fonts.h"
+
+// Debugging
+#include <stdio.h>
+#define dbgout ((char*)0xFB0000)
+#define dbgerr ((char*)0xFC0000)
+#define dbg_sprintf sprintf
+
 #define INPUT_FIELD_X	100
 #define INPUT_FIELD_Y	150
 
-void setup_gfx_textio(void) 
+
+void setup_fontlib_textio(void)
 {
-	/* Setup the GraphX wrapper. */
-	textio_library_routines_t routines = TEXTIO_GRAPHX_ROUTINES;
+	/* Setup the FontLib wrapper. */
+	textio_library_routines_t routines = TEXTIO_FONTLIB_ROUTINES;
 
 	/* Pass the wrapper pointers to TextIOC. */
 	textio_SetLibraryRoutines(&routines);
@@ -22,14 +32,14 @@ void draw_buffer_contents(char *first_visible_char, uint24_t max_width)
 	uint24_t curr_width = 0;
 	
 	gfx_SetColor(0xff);
-	gfx_FillRectangle(INPUT_FIELD_X, INPUT_FIELD_Y, max_width + 7, 9);
-	gfx_SetTextXY(INPUT_FIELD_X + 1, INPUT_FIELD_Y + 1);
+	gfx_FillRectangle(INPUT_FIELD_X, INPUT_FIELD_Y, max_width + 7, fontlib_GetCurrentFontHeight());
+	fontlib_SetCursorPosition(INPUT_FIELD_X + 1, INPUT_FIELD_Y + 1);
 	
-	curr_width += gfx_GetCharWidth(*(first_visible_char + i));
+	curr_width += fontlib_GetGlyphWidth(*(first_visible_char + i));
 	while (curr_width < max_width && *(first_visible_char + i) != '\0')
 	{
-		gfx_PrintChar(*(first_visible_char + i));
-		curr_width += gfx_GetCharWidth(*(first_visible_char + i));
+		fontlib_DrawGlyph(*(first_visible_char + i));
+		curr_width += fontlib_GetGlyphWidth(*(first_visible_char + i));
 		i += 1;
 	};
 	return;
@@ -40,7 +50,7 @@ void draw_cursor(uint24_t cursor_x, uint8_t cursor_y, uint24_t counter)
 	gfx_SetColor(0x00);
 	if (counter <= 100)
 		gfx_SetColor(0xff);
-	gfx_FillRectangle(cursor_x, cursor_y, 1, 9);
+	gfx_FillRectangle(cursor_x, cursor_y, 1, fontlib_GetCurrentFontHeight());
 	return;
 }
 
@@ -55,21 +65,26 @@ void input(void) {
 	int offset;
 	uint24_t i;
 	
-	setup_gfx_textio();
+	setup_fontlib_textio();
 	
 	char *curr_char_ptr = buffer;
 	uint24_t buffer_size = 9;
     char *first_visible_char = buffer;
     uint24_t visible_buffer_width = 50;
 	
+	fontlib_SetWindow(INPUT_FIELD_X, INPUT_FIELD_Y, visible_buffer_width, fontlib_GetCurrentFontHeight());
+	fontlib_SetLineSpacing(0, 0);
+	
 	for(;;)
 	{
 		gfx_SetColor(0x00);
-		gfx_Rectangle(INPUT_FIELD_X - 2, INPUT_FIELD_Y - 2, visible_buffer_width + 10, 13);
+		gfx_Rectangle(INPUT_FIELD_X - 2, INPUT_FIELD_Y - 2, visible_buffer_width + 10, fontlib_GetCurrentFontHeight() + 4);
 		
 		draw_buffer_contents(first_visible_char, visible_buffer_width);
 		
-		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char)) - INPUT_FIELD_X > visible_buffer_width)
+		dbg_sprintf(dbgout, "curr_char_ptr = 0x%6x\n", curr_char_ptr);
+		
+		if ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char)) - INPUT_FIELD_X > visible_buffer_width)
 		{
 			first_visible_char++;
 		};
@@ -114,6 +129,7 @@ void input(void) {
 			if (first_visible_char > buffer)
 			{
 				first_visible_char--;
+				
 			};
 			textio_ShiftDeleteChar(buffer, buffer_size, curr_char_ptr);
 		};
@@ -158,6 +174,7 @@ void input(void) {
 void main(void)
 {
     gfx_Begin();
+	fontlib_SetFont(test_font, 0);
 	input();
     gfx_End();
     return;
