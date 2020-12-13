@@ -26,12 +26,6 @@
 	export textio_ShiftStringRight
 	export textio_KeyToOffset
     
-	export textio_SetPrintFormat
-	export textio_GetPrintFormat
-	export textio_SetNewlineCode
-	export textio_GetNewlineCode
-	export textio_SetTabWidth
-	export textio_GetTabWidth
 	export textio_GetCharWidth
 	export textio_GetLineWidth
 	export textio_GetStringWidthL
@@ -52,6 +46,12 @@
 	bPrintLeftMarginFlush	:= 1
 	bPrintCentered		:= 2
 	bPrintRightMarginFlush	:= 3
+
+; These define where the offsets are for data in textio_output_data_t structure
+	tab_width	:= 0
+	newline	:= 3
+	print_format	:= 4
+	max_line_width	:= 5
 
 macro mOpenDebugger
 	push	hl
@@ -640,119 +640,24 @@ textio_KeyToOffset:
 ;=============================================================;
 
 
-textio_SetPrintFormat:
-; Arguments:
-;   arg0 = format code
-; Returns:
-;   A = 0 if invalid format code passed; A is returned intact, otherwise
-; Destroys:
-;   A
-;   DE
-;   HL
-
-	ld	hl,arg0
-	add	hl,sp
-	ld	a,bPrintRightMarginFlush
-	sub	a,(hl)
-	jr	c,.invalidValue
-	ld	a,(hl)
-	cp	a,0
-	jr	z,.invalidValue
-	ld	(_PrintFormat),a
-	ret
-
-.invalidValue:
-	xor	a,a
-	ret
-
-
-;-------------------------------------------------------------
-textio_GetPrintFormat:
-; Arguments:
-;   None
-; Returns:
-;   A = current print format code
-; Destroys:
-;   None
-
-	ld	a,(_PrintFormat)
-	ret
-
-
-;-------------------------------------------------------------
-textio_SetNewlineCode:
-; Arguments:
-;   arg0 = character
-; Returns:
-;   None
-; Destroys:
-;   A and HL
-
-	ld	hl,arg0
-	add	hl,sp
-	ld	a,(hl)
-	ld	(_NewlineCode),a
-	ret
-
-
-;-------------------------------------------------------------
-textio_GetNewlineCode:
-; Arguments:
-;   None
-; Returns:
-;   A = newline character
-; Destroys:
-;   None
-
-	ld	a,(_NewlineCode)
-	ret
-
-
-;-------------------------------------------------------------
-textio_SetTabWidth:
-; Arguments:
-;   arg0 = width
-; Returns:
-;   None
-; Destroys:
-;   A and HL
-
-	ld	hl,arg0
-	add	hl,sp
-	ld	a,(hl)
-	cp	a,0
-	ret	z
-	ld	(_TabWidth),a
-	ret
-
-
-;-------------------------------------------------------------
-textio_GetTabWidth:
-; Arguments:
-;   None
-; Returns:
-;   A = tab width
-; Destroys:
-;   None
-
-	ld	a,(_TabWidth)
-	ret
-
-
-;-------------------------------------------------------------
 textio_GetCharWidth:
 ; Arguments:
-;   arg0 = char
+;   arg0 = character
+;   arg1 = pointer to textio_output_data_t structure
 ; Returns:
-;   HL = width of char
+;   HL = width of character
 ; Destroys:
 ;   All
 
 	ld	hl,arg0
 	add	hl,sp
 	ld	a,(hl)
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	hl,(hl)
+	ld	hl,(hl)		; HL = tab_width
 	cp	a,tab
-	ld	hl,(_TabWidth)
 	ret	z
 	or	a,a
 	sbc	hl,hl
@@ -764,41 +669,29 @@ textio_GetCharWidth:
 
 
 ;-------------------------------------------------------------
-textio_GetLineWidth:
-; Arguments:
-;   arg0  =  pointer to line
-;   arg1  =  pointer to end of line
-; Returns:
-;   HL = Width of line
-; Destroys:
-;   All
-
-	ld	iy,0
-	add	iy,sp
-	ld	de,(iy + arg0)			; DE -> line
-	ld	hl,(iy + arg1) 			; HL -> eol
-	xor	a,a
-	sbc	hl,de
-	push	hl
-	push	de
-	call	textio_GetStringWidthL
-	pop	de
-	pop	de
-	ret
-
-
-;-------------------------------------------------------------
 textio_GetStringWidthL:
 ; Arguments:
 ;   arg0 = pointer to string
 ;   arg1 = number of characters
+;   arg2 = pointer to textio_output_data_t structure
 ; Returns:
 ;   HL = width of characters
 ; Destroys:
 ;   All
 
-	ld	hl,arg1
+	ld	hl,arg2
 	add	hl,sp
+	ld	de,(hl)
+	
+	nop
+	nop
+	nop
+.structPtr := $ - 3
+	ld	(.structPtr),de
+	
+	dec	hl
+	dec	hl
+	dec	hl
 	ld	bc,(hl)
 	dec	hl
 	dec	hl
@@ -820,7 +713,13 @@ textio_GetStringWidthL:
 	pop	hl
 	jr	z,.exit
 
-	ld	a,(_NewlineCode)
+	push	hl
+	ld	hl,(.structPtr)
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	a,(hl)		; A = newline character
+	pop	hl
 	cp	a,(hl)
 	jr	z,.exit
 
@@ -833,8 +732,11 @@ textio_GetStringWidthL:
 	push	de
 	ld	de,0
 	ld	e,(hl)
+	ld	hl,(.structPtr)
+	push	hl
 	push	de
 	call	textio_GetCharWidth
+	pop	de
 	pop	de
 	pop	de
 	add	hl,de
@@ -850,11 +752,39 @@ textio_GetStringWidthL:
 
 
 ;-------------------------------------------------------------
+textio_GetLineWidth:
+; Arguments:
+;   arg0 = pointer to line
+;   arg1 = pointer to end of line
+;   arg2 = pointer to textio_output_data_t structure
+; Returns:
+;   HL = Width of line
+; Destroys:
+;   All
+
+	ld	iy,0
+	add	iy,sp
+	ld	de,(iy + arg0)		; DE -> line
+	ld	hl,(iy + arg1) 		; HL -> eol
+	ld	bc,(iy + arg2)		; BC -> structure
+	xor	a,a
+	sbc	hl,de
+	push	bc
+	push	hl
+	push	de
+	call	textio_GetStringWidthL
+	pop	de
+	pop	de
+	pop	de
+	ret
+	
+
+;-------------------------------------------------------------
 textio_GetLinePtr:
 ; Arguments:
 ;   arg0 = pointer to text
 ;   arg1 = line number
-;   arg2 = maximum line width
+;   arg2 = pointer to textio_output_data_t structure
 ; Returns:
 ;   HL = pointer to next line; HL = NULL if error
 ; Destroys:
@@ -866,29 +796,51 @@ textio_GetLinePtr:
 	inc	hl
 	inc	hl
 	inc	hl
+	ld	de,0
+.currLineNum := $ - 3
 	ld	de,(hl)
-	ld	(_CurrLineNum),de
+	ld	(.currLineNum),de
 	inc	hl
 	inc	hl
 	inc	hl
+	ld	hl,(hl)
+	ld	de,0
+.structPtr := $ - 3
+	ld	(.structPtr),hl
+	inc	hl
+	inc	hl
+	inc	hl
+	ld	a,0
+.newline := $ - 1
+	ld	a,(hl)
+	ld	(.newline),a
+	inc	hl
+	ld	a,0
+.printFormat := $ - 1
+	ld	a,(hl)
+	ld	(.printFormat),a
+	inc	hl
+	ld	de,0
+.maxLineWidth := $ - 3
 	ld	de,(hl)
-	ld (_MaxLineWidth),de
+	ld	(.maxLineWidth),de
+	
 	push	bc
 	push	bc
-	pop	hl				; BC -> text
+	pop	hl		; BC -> text
 
 .outerLoop:
-; _CurrLineNum acts as a decrementing counter. When it reaches zero, return pointer
+; .currLineNum acts as a decrementing counter. When it reaches zero, return pointer
 	pop	bc
 	push	hl
 	ld	de,0
-	ld	hl,(_CurrLineNum)
+	ld	hl,(.currLineNum)
 	xor	a,a
 	sbc	hl,de
 	pop	hl
 	ret	z
 
-	push	bc				; Save pointer to start of line
+	push	bc		; Save pointer to start of line
 	call	util.GetApproximateLinePtr
 	pop	de
 	xor	a,a
@@ -896,11 +848,11 @@ textio_GetLinePtr:
 	ret z
 
 	push	hl
-	pop	bc				; BC = approximated pointer
-	push	de			; DE -> start of line
+	pop	bc		; BC = approximated pointer
+	push	de		; DE -> start of line
 
 .innerLoop:
-	ld	a,(_NewlineCode)
+	ld	a,(.newline)
 	cp	a,(hl)
 	jr	z,.skipSpaceOrNewline
 
@@ -930,7 +882,7 @@ textio_GetLinePtr:
 
 .formatSpace:
 ; Spaces should be prepended to the next line if printing right-margin flush
-	ld	a,(_PrintFormat)
+	ld	a,(.printFormat)
 	cp	a,bPrintRightMarginFlush
 	jr	z,.startNewLine
 
@@ -938,11 +890,11 @@ textio_GetLinePtr:
 	inc	hl
 
 .startNewLine:
-	ld	de,(_CurrLineNum)			; Decrement the current line number
+	ld	de,(.currLineNum)		; Decrement the current line number
 	dec	de
-	ld	(_CurrLineNum),de
+	ld	(.currLineNum),de
 	pop	bc
-	push	hl						; Set the current line pointer to the current char pointer
+	push	hl		; Set the current line pointer to the current char pointer
 	jr	.outerLoop
 
 
@@ -961,23 +913,26 @@ util.GetApproximateLinePtr:
 	cp	a,(hl)
 	ret	z
 
-	ld	a,(_NewlineCode)
+	ld	a,(textio_GetLinePtr.newline)
 	cp	a,(hl)
 	ret	z
 
 	push	hl			; HL -> current character
 	push	de			; DE = line width (running total)
 	ld	e,(hl)
+	ld	hl,(textio_GetLinePtr.structPtr)
+	push	hl
 	xor	a,a
 	sbc	hl,hl
 	ld	l,e
 	push	hl
-	call	util.GetCharWidth
+	call	textio_GetCharWidth
+	pop	de
 	pop	de
 	pop	de
 	add	hl,de
 	ex	de,hl
-	ld	hl,(_MaxLineWidth)
+	ld	hl,(textio_GetLinePtr.maxLineWidth)
 	xor	a,a
 	sbc	hl,de
 	pop	hl
@@ -1040,17 +995,3 @@ _LibraryVersion:
 ; Pointers for external library function implementations
 _GetCharWidth:
 	dl	0
-
-; Data for text output functions
-_TabWidth:
-	dl	16
-_PrintFormat:
-	db	1
-_NewlineCode:
-	db	$0a
-
-; Data for textio_GetLinePtr
-_CurrLineNum:
-	dl	0
-_MaxLineWidth:
-	dl	320

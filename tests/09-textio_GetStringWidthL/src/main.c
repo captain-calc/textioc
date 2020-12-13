@@ -1,4 +1,5 @@
 #include <keypadc.h>
+#include <graphx.h>
 #include <tice.h>
 #include <textioc.h>
 
@@ -13,7 +14,7 @@
 
 void setup_tios_textio(void)
 {
-	/* Setup the GraphX wrapper. */
+	/* Setup the TI-OS wrapper. */
 	textio_library_routines_t routines = TEXTIO_TIOS_ROUTINES;
 
 	/* Pass the wrapper pointers to TextIOC. */
@@ -23,6 +24,10 @@ void setup_tios_textio(void)
 
 int main(void)
 {
+	/* Setup the default TextIOC output data for the text output functions. */
+	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t *output_data = &data;
+	
 	setup_tios_textio();
 	
 	dbg_sprintf(dbgout, "==========================================\n");
@@ -32,7 +37,7 @@ int main(void)
 	 * Test: 01
 	 * Get the width of one character using the homescreen char width routine.
 	 */
-	if (textio_GetCharWidth('A') != 1)
+	if (textio_GetCharWidth('A', output_data) != 1)
 	{
 		dbg_sprintf(dbgout, "Test: 01: textio_GetCharWidth failed.\n");
 		return 1;
@@ -42,7 +47,7 @@ int main(void)
 	 * Test: 02
 	 * Get the width of four characters using the homescreen char width routine.
 	 */
-	if (textio_GetStringWidthL("ABCD", 4) != 4)
+	if (textio_GetStringWidthL("ABCD", 4, output_data) != 4)
 	{
 		dbg_sprintf(dbgout, "Test: 02: textio_GetStringWidthL failed.\n");
 		return 1;

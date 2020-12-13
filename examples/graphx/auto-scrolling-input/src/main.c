@@ -55,12 +55,14 @@ void input(void) {
 	int offset;
 	uint24_t i;
 	
-	setup_gfx_textio();
-	
 	char *curr_char_ptr = buffer;
 	uint24_t buffer_size = 9;
-    char *first_visible_char = buffer;
-    uint24_t visible_buffer_width = 50;
+	char *first_visible_char = buffer;
+	uint24_t visible_buffer_width = 50;
+	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t *output_data = &data;
+	
+	setup_gfx_textio();
 	
 	for(;;)
 	{
@@ -69,7 +71,7 @@ void input(void) {
 		
 		draw_buffer_contents(first_visible_char, visible_buffer_width);
 		
-		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char)) - INPUT_FIELD_X > visible_buffer_width)
+		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char, output_data)) - INPUT_FIELD_X > visible_buffer_width)
 		{
 			first_visible_char++;
 		};
@@ -99,7 +101,7 @@ void input(void) {
 					if (!textio_InsertChar(buffer, buffer_size, character, curr_char_ptr))
 					{
 						curr_char_ptr++;
-						while (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char) > visible_buffer_width)
+						while (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char, output_data) > visible_buffer_width)
 						{
 							first_visible_char++;
 						};
@@ -138,7 +140,7 @@ void input(void) {
 		if (kb_Data[7] & kb_Right && *curr_char_ptr != '\0')
 		{
 			curr_char_ptr++;
-			if (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char + 1) > visible_buffer_width)
+			if (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char + 1, output_data) > visible_buffer_width)
 			{
 				first_visible_char++;
 			};
@@ -157,8 +159,8 @@ void input(void) {
 
 void main(void)
 {
-    gfx_Begin();
+	gfx_Begin();
 	input();
-    gfx_End();
-    return;
+	gfx_End();
+	return;
 }

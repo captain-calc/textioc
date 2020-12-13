@@ -23,21 +23,21 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 	
 	char *curr_line, *next_line, *curr_char;
 	uint8_t line_spacing = 9;
+	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t *output_data = &data;
 	
+	output_data->max_line_width = max_line_width;
 	curr_line = text;
 
 	for (;;) {
 		
 		// It is important to remember that textio_GetLineWidth() retrieves the width of all characters between line and eol, INCLUSIVE.
-		next_line = textio_GetLinePtr(curr_line, 1, max_line_width);
+		next_line = textio_GetLinePtr(curr_line, 1, output_data);
 		
-		// Debugging
-		dbg_sprintf(dbgout, "curr_line = 0x%6x | next_line = 0x%6x\n", curr_line, next_line);
-		
-		if (textio_GetPrintFormat() == TEXTIOC_FORMAT_RIGHT_MARGIN_FLUSH) {
-			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1), yPos);
-		} else if (textio_GetPrintFormat() == TEXTIOC_FORMAT_CENTERED) {
-			gfx_SetTextXY((max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1)) / 2, yPos);
+		if (output_data->print_format == TEXTIO_FORMAT_RIGHT_MARGIN_FLUSH) {
+			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1, output_data), yPos);
+		} else if (output_data->print_format == TEXTIO_FORMAT_CENTERED) {
+			gfx_SetTextXY((max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1, output_data)) / 2, yPos);
 		} else {
 			gfx_SetTextXY(xPos, yPos);
 		};
@@ -69,15 +69,6 @@ void main(void) {
 	
 	/* Setup source library. */
 	setup_gfx_textio();
-	
-	/* Set print format to left-margin flush. */
-	textio_SetPrintFormat(TEXTIOC_FORMAT_LEFT_MARGIN_FLUSH);
-	
-	/* Set the number of pixels that make up the tab. */
-	textio_SetTabWidth(gfx_GetCharWidth(' ') * 4);
-	
-	// Debugging
-	dbg_sprintf(dbgout, "The eagle has landed.");
 	
 	/* Print the text */
 	print_text(text, 0, 5, 140);

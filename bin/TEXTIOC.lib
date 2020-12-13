@@ -11,13 +11,7 @@ library	"TEXTIOC", 1
 	export	textio_ShiftStringLeft ; 27
 	export	textio_ShiftStringRight ; 30
 	export	textio_KeyToOffset ; 33
-	export	textio_SetPrintFormat ; 36
-	export	textio_GetPrintFormat ; 39
-	export	textio_SetNewlineCode ; 42
-	export	textio_GetNewlineCode ; 45
-	export	textio_SetTabWidth ; 48
-	export	textio_GetTabWidth ; 51
-	export	textio_GetCharWidth ; 54
-	export	textio_GetLineWidth ; 57
-	export	textio_GetStringWidthL ; 60
-	export	textio_GetLinePtr ; 63
+	export	textio_GetCharWidth ; 36
+	export	textio_GetLineWidth ; 39
+	export	textio_GetStringWidthL ; 42
+	export	textio_GetLinePtr ; 45

@@ -13,7 +13,7 @@
 
 void setup_tios_textio(void)
 {
-	/* Setup the GraphX wrapper. */
+	/* Setup the TI-OS wrapper. */
 	textio_library_routines_t routines = TEXTIO_TIOS_ROUTINES;
 
 	/* Pass the wrapper pointers to TextIOC. */
