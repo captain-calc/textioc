@@ -26,7 +26,7 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 	
 	char *curr_line, *next_line, *curr_char;
 	uint8_t line_spacing = 13;
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t data = TEXTIO_FONTLIB_OUTPUT_DATA;
 	textio_output_data_t *output_data = &data;
 	
 	curr_line = text;

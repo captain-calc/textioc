@@ -110,7 +110,7 @@ void textio_SetLibraryRoutines(textio_library_routines_t *ptr);
  * @param buffer_size Size of buffer (not including null terminator)
  * @param character Character to write
  * @param location Pointer to where character should be written
- * @return 0 if character was inserted; 1, if character could not be written
+ * @return 0 if character was inserted; 1 if character could not be written
 */
 bool textio_InsertChar(const char *buffer, uint24_t buffer_size, const char character, const char *location);
 
@@ -123,7 +123,7 @@ bool textio_InsertChar(const char *buffer, uint24_t buffer_size, const char char
  * @param string String to write
  * @param location Pointer to where string should be written
  * @param length Number of characters to write
- * @return 0 if string was inserted; 1, if string could not be written
+ * @return 0 if string was inserted; 1 if string could not be written
 */
 bool textio_InsertString(const char *buffer, uint24_t buffer_size, const char *string, const char *location, uint24_t length);
 
@@ -157,7 +157,7 @@ void textio_WriteString(const char *location, uint24_t length, const char *strin
  * @param buffer Pointer to buffer
  * @param buffer_size Size of buffer (not including null terminator)
  * @param character Pointer to character
- * @return Width of deleted character
+ * @return Width of deleted character 0 if delete failed
 */
 uint24_t textio_ShiftDeleteChar(const char *buffer, uint24_t buffer_size, const char *character);
 
@@ -169,7 +169,7 @@ uint24_t textio_ShiftDeleteChar(const char *buffer, uint24_t buffer_size, const 
  * @param buffer_size Size of buffer (not including null terminator)
  * @param string Pointer to string
  * @param length Number of characters to delete
- * @return Width of deleted string
+ * @return Width of deleted string; 0 if delete failed
 */
 uint24_t textio_ShiftDeleteString(const char *buffer, uint24_t buffer_size, const char *string, uint24_t length);
 
@@ -213,6 +213,20 @@ void textio_ShiftStringRight(const char *string, uint24_t distance);
 */
 int8_t textio_KeyToOffset(void);
 
+/**
+ * General data for pre-made Simple Input functions.
+*/
+typedef struct {
+	char *buffer;
+	uint24_t buffer_size;
+	char *char_ptr;
+	char *first_visible_char;
+	uint24_t visible_buffer_width;
+} textio_input_data_t;
+
+/**
+ * General data for the text output functions.
+*/
 typedef struct {
 	uint24_t tab_width;
 	char newline;
@@ -220,12 +234,55 @@ typedef struct {
 	uint24_t max_line_width;
 } textio_output_data_t;
 
-#define TEXTIO_DEFAULT_OUTPUT_DATA { \
-	8, \
+/**
+ * Default output data for GraphX.
+*/
+
+#define TEXTIO_GRAPHX_OUTPUT_DATA { \
+	12, \
 	'\x0a', \
 	1, \
 	LCD_WIDTH \
 }
+
+/**
+ * Default output data for FontLibC.
+*/
+
+#define TEXTIO_FONTLIB_OUTPUT_DATA { \
+	12, \
+	'\x0a', \
+	1, \
+	LCD_WIDTH \
+}
+
+/**
+ * Default output data for homescreen.
+*/
+
+#define TEXTIO_TIOS_OUTPUT_DATA { \
+	4, \
+	'\x0a', \
+	1, \
+	26 \
+}
+
+/**
+ * Gets a character from the KEYMAP and inserts it into the buffer supplied by INPUT_DATA.
+ * This function modifies char_ptr and first_visible_char in the INPUT_DATA function if
+ * necessary.
+ *
+ * TESTED and WORKING (see GraphX auto-scrolling-input example)
+*/
+textio_GetChar(textio_input_data_t *input_data, textio_output_data_t *output_data, char *keymap);
+
+/**
+ * Deletes CHARACTER and shifts any characters to the right of the deleted
+ * character left.
+ *
+ * UNTESTED!
+*/
+textio_DeleteChar_SimpleInput(char **character, char *buffer, char **first_visible_char, uint24_t buffer_size);
 
 /**
  * Print formatting options for textio_GetLinePtr.

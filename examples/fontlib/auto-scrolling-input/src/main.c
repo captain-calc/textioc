@@ -63,7 +63,7 @@ void input(void) {
 	uint24_t buffer_size = 9;
 	char *first_visible_char = buffer;
 	uint24_t visible_buffer_width = 50;
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t data = TEXTIO_FONTLIB_OUTPUT_DATA;
 	textio_output_data_t *output_data = &data;
 	
 	setup_fontlib_textio();

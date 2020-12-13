@@ -25,7 +25,7 @@ void setup_tios_textio(void)
 int main(void)
 {
 	/* Setup the default TextIOC output data for the text output functions. */
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t data = TEXTIO_TIOS_OUTPUT_DATA;
 	textio_output_data_t *output_data = &data;
 	
 	setup_tios_textio();

@@ -25,7 +25,7 @@ void print(char *text)
 	char buffer[27] = {'\0'};
 	char *curr_line, *next_line;
 	int i;
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t data = TEXTIO_TIOS_OUTPUT_DATA;
 	textio_output_data_t *output_data = &data;
 	
 	output_data->tab_width = 1;

@@ -25,6 +25,9 @@
 	export textio_ShiftStringLeft
 	export textio_ShiftStringRight
 	export textio_KeyToOffset
+	
+	export textio_GetChar
+	export textio_DeleteChar_SimpleInput
     
 	export textio_GetCharWidth
 	export textio_GetLineWidth
@@ -101,7 +104,7 @@ textio_SetLibraryRoutines:
 
 
 textio_InsertChar:
-; Arguements:
+; Arguments:
 ;   arg0 -> buffer
 ;   arg1 = buffer size
 ;   arg2 = character
@@ -633,6 +636,143 @@ textio_KeyToOffset:
 	ret
 
 
+;-------------------------------------------------------------
+textio_GetChar:
+; Arguments:
+;   arg0 = pointer to textio_input_data_t structure
+;   arg1 = pointer to textio_output_data_t structure
+;   arg2 = pointer to keymap string
+; Returns:
+;   None
+; Destroys:
+;   A, BC, DE, HL, IY
+
+; Return if key offset is invalid
+	call	textio_KeyToOffset
+	cp	a,-1
+	ret	z
+
+; Return if character from keymap is NULL
+	ld	hl,arg2
+	add	hl,sp
+	ld	hl,(hl)
+	ld	bc,0
+	ld	c,a
+	add	hl,bc
+	xor	a,a
+	or (hl)
+	ret	z
+	
+	ld	c,(hl)		; C = character from keymap
+	ld	hl,arg0
+	add	hl,sp
+	ld	iy,(hl)		; IY -> input data structure
+	ld	hl,(iy + 6)	; HL -> character insertion point
+	push	hl
+	push	bc
+	ld	hl,(iy + 3)	; HL = buffer size
+	push	hl
+	ld	hl,(iy)		; HL -> buffer
+	push	hl
+	call	textio_InsertChar
+	pop	de
+	pop	de
+	pop	de
+	pop	de		; DE -> character insertion point
+
+; Return if character insertion failed
+	or	a
+	ret	nz
+
+; Increment character insertion point
+	inc	de
+	ld	(iy + 6),de
+
+	ld	de,(iy + 9)	; DE -> first visible character
+.getStrWidth:
+	push	iy
+	ld	hl,(iy + 6)
+	xor	a,a
+	sbc	hl,de
+	push	hl
+	push	de
+	ld	hl,arg1
+	add	hl,sp
+	ld	hl,(hl)
+	push	hl
+	call	textio_GetStringWidthL
+	pop	de
+	pop	de		; DE -> first visible character
+	pop	bc
+	pop	iy
+	
+	ld	bc,(iy + 12)	; BC = visible buffer width
+	xor	a,a
+	sbc	hl,bc
+	ret	c
+
+; Increment the first visible character pointer
+	inc	de
+	ld	(iy + 9),de
+	jr	.getStrWidth
+
+
+;-------------------------------------------------------------
+textio_DeleteChar_SimpleInput:
+; Arguments:
+;   arg0 = address of pointer to character
+;   arg1 = pointer to buffer
+;   arg2 = address of pointer to first visible character
+;   arg3 = buffer size
+; Returns:
+;   HL = width of deleted character; 0 if delete failed
+; Destroys:
+;   A, BC, DE, IY
+
+	ld	iy,0
+	add	iy,sp
+	ld	hl,(iy + arg0)
+	ld	hl,(hl)		; HL -> character
+	ld	bc,(iy + arg1)
+	push	hl
+	xor	a,a
+	sbc	hl,bc
+	pop	hl
+	ret	c
+	ret	z
+
+; Decrement arg0
+	dec	hl
+	ex	de,hl
+	ld	(hl),de
+
+	ld	hl,(iy + arg2)
+	ld	hl,(hl)		; HL -> first visible character
+	push	hl
+	xor	a,a
+	sbc	hl,bc
+	pop	hl
+	jr	c,.deleteChar
+	jr	z,.deleteChar
+
+; Decrement arg2
+	dec	hl
+	ex	de,hl
+	ld	(hl),de
+
+.deleteChar:
+	ld	hl,(iy + arg0)
+	push	hl
+	ld	hl,(iy + arg3)
+	push	hl
+	push	bc
+	call	textio_ShiftDeleteChar
+	pop	de
+	pop	de
+	pop	de
+	ret
+
+
 ;=============================================================;
 ;                                                             ;
 ;                 Text Output Functions                       ;
@@ -677,7 +817,7 @@ textio_GetStringWidthL:
 ; Returns:
 ;   HL = width of characters
 ; Destroys:
-;   All
+;   A, BC, DE, IY
 
 	ld	iy,0
 	add	iy,sp
@@ -752,7 +892,7 @@ textio_GetLineWidth:
 ; Returns:
 ;   HL = Width of line
 ; Destroys:
-;   All
+;   A, BC, DE, IY
 
 	ld	iy,0
 	add	iy,sp
@@ -780,7 +920,7 @@ textio_GetLinePtr:
 ; Returns:
 ;   HL = pointer to next line; HL = NULL if error
 ; Destroys:
-;   All
+;   A, BD, DE, IY
 
 	ld	iy,0
 	add	iy,sp
@@ -889,7 +1029,7 @@ util.GetApproximateLinePtr:
 ; Returns:
 ;   HL = approximated pointer to next line
 ; Destroys:
-;   All working registers
+;   A, BC, DE
 
 	ld	de,0
 .loop:
@@ -933,10 +1073,12 @@ util.GetApproximateLinePtr:
 
 util.CallHL:
 ; Calls HL
-; Inputs:
+; Arguments:
 ;   HL = address to jump to
-; Outputs:
+; Returns:
 ;   None
+; Destroys:
+;   Unknown
 
 ; Return if HL == 0
 	add	hl,bc
@@ -956,7 +1098,7 @@ util.GetCharWidth:
 ; Returns:
 ;   HL = width of character
 ; Destroys:
-;   All
+;   Unknown
 
 	ld	hl,arg0
 	add	hl,sp

@@ -23,7 +23,7 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 	
 	char *curr_line, *next_line, *curr_char;
 	uint8_t line_spacing = 9;
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
+	textio_output_data_t data = TEXTIO_GRAPHX_OUTPUT_DATA;
 	textio_output_data_t *output_data = &data;
 	
 	output_data->max_line_width = max_line_width;

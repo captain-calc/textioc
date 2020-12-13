@@ -51,29 +51,30 @@ void input(void) {
 	
 	uint24_t cursor_x = INPUT_FIELD_X;
 	uint8_t cursor_y = INPUT_FIELD_Y;
-	char character;
-	int offset;
 	uint24_t i;
-	
-	char *curr_char_ptr = buffer;
-	uint24_t buffer_size = 9;
-	char *first_visible_char = buffer;
-	uint24_t visible_buffer_width = 50;
-	textio_output_data_t data = TEXTIO_DEFAULT_OUTPUT_DATA;
-	textio_output_data_t *output_data = &data;
+	textio_input_data_t i_data = {
+		buffer,
+		9,
+		buffer,
+		buffer,
+		50
+	};
+	textio_input_data_t *input_data = &i_data;
+	textio_output_data_t o_data = TEXTIO_GRAPHX_OUTPUT_DATA;
+	textio_output_data_t *output_data = &o_data;
 	
 	setup_gfx_textio();
 	
 	for(;;)
 	{
 		gfx_SetColor(0x00);
-		gfx_Rectangle(INPUT_FIELD_X - 2, INPUT_FIELD_Y - 2, visible_buffer_width + 10, 13);
+		gfx_Rectangle(INPUT_FIELD_X - 2, INPUT_FIELD_Y - 2, input_data->visible_buffer_width + 10, 13);
 		
-		draw_buffer_contents(first_visible_char, visible_buffer_width);
+		draw_buffer_contents(input_data->first_visible_char, input_data->visible_buffer_width);
 		
-		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(output_data, first_visible_char, curr_char_ptr - first_visible_char)) - INPUT_FIELD_X > visible_buffer_width)
+		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(output_data, input_data->first_visible_char, input_data->char_ptr - input_data->first_visible_char)) - INPUT_FIELD_X > input_data->visible_buffer_width)
 		{
-			first_visible_char++;
+			input_data->first_visible_char++;
 		};
 		
 		i = 200;
@@ -90,6 +91,7 @@ void input(void) {
 		}
 		while (!kb_AnyKey());
 		
+		/*
 		if (!(kb_Data[6] & kb_Enter))
 		{
 			offset = textio_KeyToOffset();
@@ -109,40 +111,45 @@ void input(void) {
 				};
 			};
 		};
+		*/
 		
-		if (kb_Data[1] & kb_Del && curr_char_ptr > buffer)
+		if (!(kb_Data[6] & kb_Enter))
 		{
-			curr_char_ptr--;
-			if (first_visible_char > buffer)
+			textio_GetChar(input_data, output_data, letters);
+		};
+		
+		if (kb_Data[1] & kb_Del && input_data->char_ptr > buffer)
+		{
+			input_data->char_ptr--;
+			if (input_data->first_visible_char > buffer)
 			{
-				first_visible_char--;
+				input_data->first_visible_char--;
 			};
-			textio_ShiftDeleteChar(buffer, buffer_size, curr_char_ptr);
+			textio_ShiftDeleteChar(input_data->buffer, input_data->buffer_size, input_data->char_ptr);
 		};
 		
 		if (kb_Data[6] & kb_Clear)
 		{
-			textio_DeleteString(buffer, buffer_size);
-			cursor_x = INPUT_FIELD_X;
-			curr_char_ptr = buffer;
-			first_visible_char = buffer;
+			textio_DeleteString(input_data->buffer, input_data->buffer_size);
+			input_data->char_ptr = input_data->buffer;
+			input_data->first_visible_char = input_data->buffer;
 		};
 		
-		if (kb_Data[7] & kb_Left && curr_char_ptr > buffer)
+		if (kb_Data[7] & kb_Left && input_data->char_ptr > buffer)
 		{
-			if ((curr_char_ptr == first_visible_char + 1) && first_visible_char > buffer)
+			if ((input_data->char_ptr == input_data->first_visible_char + 1) && input_data->first_visible_char > input_data->buffer)
 			{
-				first_visible_char--;
+				input_data->first_visible_char--;
 			};
-			curr_char_ptr--;
+			input_data->char_ptr--;
 		};
 		
-		if (kb_Data[7] & kb_Right && *curr_char_ptr != '\0')
+		if (kb_Data[7] & kb_Right && *(input_data->char_ptr) != '\0')
 		{
-			curr_char_ptr++;
-			if (textio_GetStringWidthL(output_data, first_visible_char, curr_char_ptr - first_visible_char + 1) > visible_buffer_width)
+			input_data->char_ptr++;
+			if (textio_GetStringWidthL(output_data, input_data->first_visible_char, input_data->char_ptr - input_data->first_visible_char + 1) > input_data->visible_buffer_width)
 			{
-				first_visible_char++;
+				input_data->first_visible_char++;
 			};
 		};
 		
