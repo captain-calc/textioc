@@ -37,7 +37,7 @@ int main(void)
 	 * Test: 01
 	 * Get the width of one character using the homescreen char width routine.
 	 */
-	if (textio_GetCharWidth('A', output_data) != 1)
+	if (textio_GetCharWidth(output_data, 'A') != 1)
 	{
 		dbg_sprintf(dbgout, "Test: 01: textio_GetCharWidth failed.\n");
 		return 1;
@@ -47,7 +47,7 @@ int main(void)
 	 * Test: 02
 	 * Get the width of four characters using the homescreen char width routine.
 	 */
-	if (textio_GetStringWidthL("ABCD", 4, output_data) != 4)
+	if (textio_GetStringWidthL(output_data, "ABCD", 4) != 4)
 	{
 		dbg_sprintf(dbgout, "Test: 02: textio_GetStringWidthL failed.\n");
 		return 1;

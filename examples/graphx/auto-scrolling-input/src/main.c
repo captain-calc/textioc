@@ -71,7 +71,7 @@ void input(void) {
 		
 		draw_buffer_contents(first_visible_char, visible_buffer_width);
 		
-		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char, output_data)) - INPUT_FIELD_X > visible_buffer_width)
+		while ((cursor_x = INPUT_FIELD_X + textio_GetStringWidthL(output_data, first_visible_char, curr_char_ptr - first_visible_char)) - INPUT_FIELD_X > visible_buffer_width)
 		{
 			first_visible_char++;
 		};
@@ -101,7 +101,7 @@ void input(void) {
 					if (!textio_InsertChar(buffer, buffer_size, character, curr_char_ptr))
 					{
 						curr_char_ptr++;
-						while (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char, output_data) > visible_buffer_width)
+						while (textio_GetStringWidthL(output_data, first_visible_char, curr_char_ptr - first_visible_char) > visible_buffer_width)
 						{
 							first_visible_char++;
 						};
@@ -140,7 +140,7 @@ void input(void) {
 		if (kb_Data[7] & kb_Right && *curr_char_ptr != '\0')
 		{
 			curr_char_ptr++;
-			if (textio_GetStringWidthL(first_visible_char, curr_char_ptr - first_visible_char + 1, output_data) > visible_buffer_width)
+			if (textio_GetStringWidthL(output_data, first_visible_char, curr_char_ptr - first_visible_char + 1) > visible_buffer_width)
 			{
 				first_visible_char++;
 			};

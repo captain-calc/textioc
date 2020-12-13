@@ -642,19 +642,19 @@ textio_KeyToOffset:
 
 textio_GetCharWidth:
 ; Arguments:
-;   arg0 = character
-;   arg1 = pointer to textio_output_data_t structure
+;   arg0 = pointer to textio_output_data_t structure
+;   arg1 = character
 ; Returns:
 ;   HL = width of character
 ; Destroys:
 ;   All
 
-	ld	hl,arg0
+	ld	hl,arg1
 	add	hl,sp
 	ld	a,(hl)
-	inc	hl
-	inc	hl
-	inc	hl
+	dec	hl
+	dec	hl
+	dec	hl
 	ld	hl,(hl)
 	ld	hl,(hl)		; HL = tab_width
 	cp	a,tab
@@ -671,32 +671,24 @@ textio_GetCharWidth:
 ;-------------------------------------------------------------
 textio_GetStringWidthL:
 ; Arguments:
-;   arg0 = pointer to string
-;   arg1 = number of characters
-;   arg2 = pointer to textio_output_data_t structure
+;   arg0 = pointer to textio_output_data_t structure
+;   arg1 = pointer to string
+;   arg2 = number of characters
 ; Returns:
 ;   HL = width of characters
 ; Destroys:
 ;   All
 
-	ld	hl,arg2
-	add	hl,sp
-	ld	de,(hl)
-	
-	nop
-	nop
-	nop
+	ld	iy,0
+	add	iy,sp
+	ld	de,(iy + arg0)
+	ld	hl,(iy + arg1)
+	ld	bc,(iy + arg2)
+	push	bc
+	ld	bc,0
 .structPtr := $ - 3
 	ld	(.structPtr),de
-	
-	dec	hl
-	dec	hl
-	dec	hl
-	ld	bc,(hl)
-	dec	hl
-	dec	hl
-	dec	hl
-	ld	hl,(hl)
+	pop	bc
 	inc	bc
 	ld	de,0				; DE = width of characters
 .loop:
@@ -732,9 +724,9 @@ textio_GetStringWidthL:
 	push	de
 	ld	de,0
 	ld	e,(hl)
+	push	de
 	ld	hl,(.structPtr)
 	push	hl
-	push	de
 	call	textio_GetCharWidth
 	pop	de
 	pop	de
@@ -754,9 +746,9 @@ textio_GetStringWidthL:
 ;-------------------------------------------------------------
 textio_GetLineWidth:
 ; Arguments:
-;   arg0 = pointer to line
-;   arg1 = pointer to end of line
-;   arg2 = pointer to textio_output_data_t structure
+;   arg0 = pointer to textio_output_data_t structure
+;   arg1 = pointer to line
+;   arg2 = pointer to end of line
 ; Returns:
 ;   HL = Width of line
 ; Destroys:
@@ -764,13 +756,13 @@ textio_GetLineWidth:
 
 	ld	iy,0
 	add	iy,sp
-	ld	de,(iy + arg0)		; DE -> line
-	ld	hl,(iy + arg1) 		; HL -> eol
-	ld	bc,(iy + arg2)		; BC -> structure
+	ld	de,(iy + arg0)		; DE -> structure
+	ld	bc,(iy + arg1) 		; BC -> line
+	ld	hl,(iy + arg2)		; HL -> eol
 	xor	a,a
-	sbc	hl,de
-	push	bc
+	sbc	hl,bc
 	push	hl
+	push	bc
 	push	de
 	call	textio_GetStringWidthL
 	pop	de
@@ -782,28 +774,17 @@ textio_GetLineWidth:
 ;-------------------------------------------------------------
 textio_GetLinePtr:
 ; Arguments:
-;   arg0 = pointer to text
-;   arg1 = line number
-;   arg2 = pointer to textio_output_data_t structure
+;   arg0 = pointer to textio_output_data_t structure
+;   arg1 = pointer to text
+;   arg2 = line number
 ; Returns:
 ;   HL = pointer to next line; HL = NULL if error
 ; Destroys:
 ;   All
 
-	ld	hl,arg0
-	add	hl,sp
-	ld	bc,(hl)			; BC -> text
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	de,0
-.currLineNum := $ - 3
-	ld	de,(hl)
-	ld	(.currLineNum),de
-	inc	hl
-	inc	hl
-	inc	hl
-	ld	hl,(hl)
+	ld	iy,0
+	add	iy,sp
+	ld	hl,(iy + arg0)
 	ld	de,0
 .structPtr := $ - 3
 	ld	(.structPtr),hl
@@ -824,10 +805,13 @@ textio_GetLinePtr:
 .maxLineWidth := $ - 3
 	ld	de,(hl)
 	ld	(.maxLineWidth),de
-	
-	push	bc
-	push	bc
-	pop	hl		; BC -> text
+
+	ld	de,0
+.currLineNum := $ - 3
+	ld	hl,(iy + arg2)
+	ld	(.currLineNum),hl
+	ld	hl,(iy + arg1)			; HL -> text
+	push	hl
 
 .outerLoop:
 ; .currLineNum acts as a decrementing counter. When it reaches zero, return pointer
@@ -920,11 +904,11 @@ util.GetApproximateLinePtr:
 	push	hl			; HL -> current character
 	push	de			; DE = line width (running total)
 	ld	e,(hl)
-	ld	hl,(textio_GetLinePtr.structPtr)
-	push	hl
 	xor	a,a
 	sbc	hl,hl
 	ld	l,e
+	push	hl
+	ld	hl,(textio_GetLinePtr.structPtr)
 	push	hl
 	call	textio_GetCharWidth
 	pop	de

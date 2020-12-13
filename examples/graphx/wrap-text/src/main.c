@@ -32,12 +32,12 @@ void print_text(char *text, uint24_t xPos, uint8_t yPos, uint24_t max_line_width
 	for (;;) {
 		
 		// It is important to remember that textio_GetLineWidth() retrieves the width of all characters between line and eol, INCLUSIVE.
-		next_line = textio_GetLinePtr(curr_line, 1, output_data);
+		next_line = textio_GetLinePtr(output_data, curr_line, 1);
 		
 		if (output_data->print_format == TEXTIO_FORMAT_RIGHT_MARGIN_FLUSH) {
-			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1, output_data), yPos);
+			gfx_SetTextXY(max_line_width - xPos - textio_GetLineWidth(output_data, curr_line, next_line - 1), yPos);
 		} else if (output_data->print_format == TEXTIO_FORMAT_CENTERED) {
-			gfx_SetTextXY((max_line_width - xPos - textio_GetLineWidth(curr_line, next_line - 1, output_data)) / 2, yPos);
+			gfx_SetTextXY((max_line_width - xPos - textio_GetLineWidth(output_data, curr_line, next_line - 1)) / 2, yPos);
 		} else {
 			gfx_SetTextXY(xPos, yPos);
 		};

@@ -259,7 +259,7 @@ typedef enum {
  * @param data Pointer to textio_output_data_t structure
  * @return Width of character
 */
-uint24_t textio_GetCharWidth(const char character, textio_output_data_t *data);
+uint24_t textio_GetCharWidth(textio_output_data_t *data, const char character);
 
 /**
  * Gets the width of \p num_chars characters in \c string.
@@ -269,7 +269,7 @@ uint24_t textio_GetCharWidth(const char character, textio_output_data_t *data);
  * @param data Pointer to textio_output_data_t structure
  * @return Width of the desired number of characters
 */
-uint24_t textio_GetStringWidthL(const char *string, uint24_t num_chars, textio_output_data_t *data);
+uint24_t textio_GetStringWidthL(textio_output_data_t *data, const char *string, uint24_t num_chars);
 
 /**
  * Gets the width of the supplied line.
@@ -279,7 +279,7 @@ uint24_t textio_GetStringWidthL(const char *string, uint24_t num_chars, textio_o
  * @param data Pointer to textio_output_data_t structure
  * @return Width of line
 */
-uint24_t textio_GetLineWidth(const char *line, char *eol, textio_output_data_t *data);
+uint24_t textio_GetLineWidth(textio_output_data_t *data, const char *line, char *eol);
 
 /**
  * Returns a pointer to the \p line_num line in \p text.
@@ -289,7 +289,7 @@ uint24_t textio_GetLineWidth(const char *line, char *eol, textio_output_data_t *
  * @param data Pointer to textio_output_data_t structure
  * @return Pointer to desired line
 */
-char *textio_GetLinePtr(const char *text, uint24_t line_num, textio_output_data_t *data);
+char *textio_GetLinePtr(textio_output_data_t *data, const char *text, uint24_t line_num);
 
 
 #ifdef __cplusplus

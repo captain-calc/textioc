@@ -35,7 +35,7 @@ void print(char *text)
 
 	for (;;)
 	{
-		next_line = textio_GetLinePtr(curr_line, 1 , output_data);
+		next_line = textio_GetLinePtr(output_data, curr_line, 1);
 		if (next_line == curr_line)
 		{
 			return;
