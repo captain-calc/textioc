@@ -252,54 +252,11 @@ typedef enum {
 } textio_line_format_options_t;
 
 /**
- * Sets the print format for textio_GetLinePtr.
- *
- * @see textio_print_format_options_t
- *
- * @param format Format option code
-*/
-bool textio_SetPrintFormat(uint8_t format);
-
-/**
- * Gets the current print format.
- *
- * @return Current print format code
-*/
-uint8_t textio_GetPrintFormat(void);
-
-/**
- * Sets the codepoint that will act as the newline character.
- *
- * @param codepoint Codepoint
-*/
-void textio_SetNewlineCode(char codepoint);
-
-/**
- * Gets the codepoint that is acting as the newline character.
- *
- * @return Codepoint
-*/
-char textio_GetNewlineCode(void);
-
-/**
- * Sets the number of pixels that make up each tab.
- *
- * @param width Width of tab
-*/
-void textio_SetTabWidth(uint24_t width);
-
-/**
- * Gets the number of pixels that make up each tab.
- *
- * @return Tab width
-*/
-uint24_t textio_GetTabWidth(void);
-
-/**
  * Gets the width of the supplied character. This function also works for tabs, and it returns the
  * tab's actual pixel width.
  *
  * @param character Target character
+ * @param data Pointer to textio_output_data_t structure
  * @return Width of character
 */
 uint24_t textio_GetCharWidth(const char character, textio_output_data_t *data);
@@ -309,6 +266,7 @@ uint24_t textio_GetCharWidth(const char character, textio_output_data_t *data);
  *
  * @param string Pointer to string
  * @param num_chars Number of characters
+ * @param data Pointer to textio_output_data_t structure
  * @return Width of the desired number of characters
 */
 uint24_t textio_GetStringWidthL(const char *string, uint24_t num_chars, textio_output_data_t *data);
@@ -318,6 +276,7 @@ uint24_t textio_GetStringWidthL(const char *string, uint24_t num_chars, textio_o
  *
  * @param line Pointer to line
  * @param eol Pointer to the End-Of-Line
+ * @param data Pointer to textio_output_data_t structure
  * @return Width of line
 */
 uint24_t textio_GetLineWidth(const char *line, char *eol, textio_output_data_t *data);
@@ -327,7 +286,7 @@ uint24_t textio_GetLineWidth(const char *line, char *eol, textio_output_data_t *
  *
  * @param text Pointer to text
  * @param line_num Number of line
- * @param max_line_width Maximum width of line (in pixels)
+ * @param data Pointer to textio_output_data_t structure
  * @return Pointer to desired line
 */
 char *textio_GetLinePtr(const char *text, uint24_t line_num, textio_output_data_t *data);
